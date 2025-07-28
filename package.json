@@ -1,22 +1,28 @@
 {
-  "name": "homebridge-plugin-name",
-  "displayName": "Plugin Name",
+  "name": "homebridge-smart-occupancy",
+  "displayName": "Smart Occupancy",
   "type": "module",
   "version": "1.0.0",
-  "private": true,
-  "description": "A short description about what your plugin does.",
-  "author": "Your Name",
+  "private": false,
+  "description": "Create flexible and customizable time-based occupancy sensors for Homebridge.",
+  "author": "ruizmarc",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/USERNAME/GITHUB_PROJECT_NAME#readme",
+  "homepage": "https://github.com/ruizmarc/homebridge-smart-occupancy#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "https://github.com/ruizmarc/homebridge-smart-occupancy.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/ruizmarc/homebridge-smart-occupancy/issues"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "occupancy",
+    "sensor",
+    "homebridge",
+    "homekit",
+    "smart-home",
+    "homebridge-smart-occupancy"
   ],
   "main": "dist/index.js",
   "engines": {
@@ -30,7 +36,8 @@
     "watch": "npm run build && npm link && nodemon"
   },
   "dependencies": {
-    "homebridge-lib": "^7.1.4"
+    "homebridge-lib": "^7.1.4",
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
