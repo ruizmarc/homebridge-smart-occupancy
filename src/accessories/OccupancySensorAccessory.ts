@@ -91,10 +91,7 @@ export class OccupancySensorAccessory {
 
   async setOccupancy(value: CharacteristicValue) {
     this.log.debug('Triggered SET Occupancy:', value);
-    this.occupancySensorState.occupied = Boolean(value);
-    this.storage.setItem(this.occupancySensorConfig.name, this.occupancySensorState).catch((error) => {
-      this.log.error(`Failed to persist occupancy sensor state for ${this.occupancySensorConfig.name}:`, error);
-    });
+    this.setOccupancyStatus(value);
   }
 
   async getOccupancy(): Promise<CharacteristicValue> {
@@ -110,7 +107,7 @@ export class OccupancySensorAccessory {
     this.log.debug('Setting occupancy status to:', value);
     this.occupancySensorState.occupied = Boolean(value);
     if (this.occupancySensorConfig.persistStatusAcrossReboots) {
-      this.storage.setItem(this.occupancySensorConfig.name, this.occupancySensorState).catch((error) => {
+      this.storage.setItem(this.occupancySensorAccessory.UUID, this.occupancySensorState).catch((error) => {
         this.log.error(`Failed to persist occupancy sensor state for ${this.occupancySensorConfig.name}:`, error);
       });
     }
