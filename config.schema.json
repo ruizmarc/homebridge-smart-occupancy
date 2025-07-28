@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "SmartOccupancy",
   "pluginType": "platform",
   "singular": true,
   "strictValidation": false,
@@ -10,7 +10,179 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "Smart Occupancy"
+      },
+      "sensors": {
+        "title": "Sensors",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Sensor Name",
+              "type": "string",
+              "required": true
+            },
+            "identifier": {
+              "title": "Identifier",
+              "type": "string",
+              "required": true,
+              "description": "Unique identifier for the sensor. Leave empty to auto-generate. If you set a value, it must be unique across all sensors. If you do not set a value, identifier will change when name changes which might break automations."
+            },
+            "stayOccupiedDelay": {
+              "title": "Stay occupied delay",
+              "type": "number",
+              "default": 30,
+              "minimum": 0,
+              "maximum": 3600,
+              "description": "Maximum time in seconds before the sensor turns off automatically. Set 0 to shutoff as soon as not occupied."
+            },
+            "newOccupancyTimeout": {
+              "title": "New Occupancy Timeout",
+              "type": "number",
+              "default": 0,
+              "minimum": 0,
+              "maximum": 3600,
+              "description": "Time in seconds to wait before being able to trigger a new occupancy event after the latest one. The first one will trigger immediately."
+            },
+            "progressiveDelay": {
+              "title": "Progressive Delay",
+              "type": "boolean",
+              "default": false,
+              "description": "Enable progressive delay to increase the delay duration with each activation until it reaches your delay config."
+            },
+            "progressionStart": {
+              "title": "Progressive Delay Start",
+              "type": "number",
+              "default": 5,
+              "minimum": 1,
+              "maximum": 3600,
+              "description": "Initial delay value in seconds for the progressive delay.",
+              "condition": {
+                "functionBody": "return model.sensors[arrayIndices].progressiveDelay === true;"
+              }
+            },
+            "progressionStep": {
+              "title": "Progressive Delay Step",
+              "type": "number",
+              "default": 5,
+              "minimum": 1,
+              "maximum": 3600,
+              "description": "Step in seconds to increase the delay duration when progressive delay is enabled.",
+              "condition": {
+                "functionBody": "return model.sensors[arrayIndices].progressiveDelay === true;"
+              }
+            },
+            "persistStatusAcrossReboots": {
+              "title": "Persist Status Across Reboots",
+              "type": "boolean",
+              "default": true,
+              "description": "If enabled, the sensor status will be persisted across reboots. If disabled, the sensor will always start as not occupied."
+            },
+            "alwaysBootAsOccupied": {
+              "title": "Always Boot as Occupied",
+              "type": "boolean",
+              "default": false,
+              "description": "If enabled, the sensor will always boot as occupied regardless of previous status.",
+              "condition": {
+                "functionBody": "return model.sensors[arrayIndices].persistStatusAcrossReboots === false;"
+              }
+            },
+            "switches": {
+              "title": "Switches",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Switch Name",
+                    "type": "string",
+                    "required": true
+                  },
+                  "type": {
+                    "title": "Switch Type",
+                    "type": "string",
+                    "required": true,
+                    "description": "Type of switch to use with this sensor.<br /><ul><li>Light Switch: It will turn on/off occupation without activating the delay.</li><li>Occupancy Progress Notification Switch: It will toggle on and off after the occupancy delay reaches the configured time.</li><li>Occupancy Switch: It will activate the occupancy sensor, but delay won't start until it turns off.</li><li>Trigger Occupancy Switch: It will trigger the occupancy sensor and the delay.</li><li>Stay-on Switch: It will keep the occupancy sensor active while switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Stay-on Trigger Switch: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Shutoff Switch: It will turn off the occupancy sensor and stop the delay.</li></ul>",
+                    "oneOf": [
+                      {
+                        "title": "Light Switch",
+                        "enum": [
+                          "LIGHT_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Occupancy Switch",
+                        "enum": [
+                          "OCCUPANCY_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Occupancy Progress Notification Switch",
+                        "enum": [
+                          "NOTIFICATION_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Trigger Occupancy Switch",
+                        "enum": [
+                          "TRIGGER_OCCUPANCY_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Stay-on Switch",
+                        "enum": [
+                          "STAY_ON_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Stay on Switch",
+                        "enum": [
+                          "STAY_ON_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Trigger Stay On Switch",
+                        "enum": [
+                          "TRIGGER_STAY_ON_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Shutoff Switch",
+                        "enum": [
+                          "SHUTOFF_SWITCH"
+                        ]
+                      }
+                    ],
+                    "default": "LIGHT_SWITCH"
+                  },
+                  "notificationThreshold": {
+                    "title": "Notification Threshold",
+                    "type": "number",
+                    "default": 75,
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percentage of delay consumed before triggering switch.",
+                    "condition": {
+                      "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
+                    }
+                  },
+                  "minimumNotificationTime": {
+                    "title": "Minimum Notification Time",
+                    "type": "number",
+                    "default": 5,
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "description": "Minimum number of seconds required to trigger a notification regardless of the notification threshold.",
+                    "condition": {
+                      "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
