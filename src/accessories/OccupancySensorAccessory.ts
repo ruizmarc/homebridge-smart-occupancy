@@ -1,89 +1,119 @@
-import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
+import type { CharacteristicValue, Logging, PlatformAccessory, Service } from 'homebridge';
 
 import type { SmartOccupancyHomebridgePlatform } from '../platform.js';
 import { OccupancySensorConfig } from '../types/config.js';
 import { SwitchAccessory } from './SwitchAccessory.js';
+import { StorageLayer } from '../utils/StorageLayer.js';
 
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
  * Each accessory may expose multiple services of different service types.
  */
-export class OccupancySensorAccessory {
-  private service: Service;
 
-  /**
-   * These are just used to create a working example
-   * You should implement your own code to track the state of your accessory
-   */
-  private exampleStates = {
-    On: false,
-    Brightness: 100,
+interface OccupancySensorState {
+  occupied: boolean;
+}
+
+export class OccupancySensorAccessory {
+  private occupancySensorService: Service;
+
+  private occupancySensorState: OccupancySensorState = {
+    occupied: false,
   };
 
+  private storage: StorageLayer;
+
   private switches: Map<string, SwitchAccessory> = new Map();
+
+  private log: Logging;
 
   constructor(
     private readonly platform: SmartOccupancyHomebridgePlatform,
     private readonly occupancySensorConfig: OccupancySensorConfig,
-    public readonly platformAccessory: PlatformAccessory,
+    public readonly occupancySensorAccessory: PlatformAccessory,
+    private readonly persistPath: string,
   ) {
-    // set accessory information
-    this.platformAccessory.getService(this.platform.Service.AccessoryInformation)!
+    this.storage = new StorageLayer(this.persistPath);
+    this.log = platform.log;
+
+    this.occupancySensorAccessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SmartOccupancy')
       .setCharacteristic(this.platform.Characteristic.Model, 'Occupancy Sensor')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, 'smart-occupancy-sensor');
 
-    this.service = this.platformAccessory.getService(this.platform.Service.OccupancySensor)
-      ?? this.platformAccessory.addService(this.platform.Service.OccupancySensor);
+    this.occupancySensorService = this.occupancySensorAccessory.getService(this.platform.Service.OccupancySensor)
+      ?? this.occupancySensorAccessory.addService(this.platform.Service.OccupancySensor);
 
-    this.service.setCharacteristic(this.platform.Characteristic.Name, platformAccessory.displayName);
+    this.occupancySensorService.setCharacteristic(this.platform.Characteristic.Name, occupancySensorAccessory.displayName);
 
-    this.service.getCharacteristic(this.platform.Characteristic.OccupancyDetected)
+    this.occupancySensorService.getCharacteristic(this.platform.Characteristic.OccupancyDetected)
       .onSet(this.setOccupancy.bind(this))
       .onGet(this.getOccupancy.bind(this));
 
     for (const switchConfig of (this.occupancySensorConfig.switches ?? [])) {
-      const switchAccessory = new SwitchAccessory(this.platform, this, switchConfig, this.platform.log);
+      const switchAccessory = new SwitchAccessory(
+        this.platform,
+        this,
+        switchConfig,
+        this.occupancySensorConfig,
+        this.persistPath,
+        this.platform.log,
+      );
       this.switches.set(switchConfig.name, switchAccessory);
     }
+
+    this.initStatus().catch((error) => {
+      this.log.error(`Failed to initialize occupancy sensor status for ${occupancySensorConfig.name}:`, error);
+    });
+
   }
-  
-  /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
-   */
+
+  private async initStatus() {
+    await this.storage.init();
+    if (this.occupancySensorConfig.persistStatusAcrossReboots) {
+      const persistedState = await this.storage.getItem<OccupancySensorState>(this.occupancySensorAccessory.UUID);
+      if (!persistedState) {
+        this.log.warn(`No persisted state found for switch ${this.occupancySensorConfig.name}, initializing to OFF`);
+        this.setOccupancyStatus(false);
+        return;
+      }
+      this.log.info(`Occupancy sensor ${this.occupancySensorConfig.name} restored state: ${this.occupancySensorState.occupied}`);
+      this.setOccupancyStatus(persistedState.occupied);
+      return;
+    }
+    if (this.occupancySensorConfig.alwaysBootAsOccupied) {
+      this.log.info(`Occupancy sensor ${this.occupancySensorConfig.name} initialized as ON`);
+      this.setOccupancyStatus(true);
+      return;
+    }
+  }
+
   async setOccupancy(value: CharacteristicValue) {
-    // implement your own code to turn your device on/off
-    this.exampleStates.On = value as boolean;
-
-    this.platform.log.debug('Set Characteristic On ->', value);
+    this.log.debug('Triggered SET Occupancy:', value);
+    this.occupancySensorState.occupied = Boolean(value);
+    this.storage.setItem(this.occupancySensorConfig.name, this.occupancySensorState).catch((error) => {
+      this.log.error(`Failed to persist occupancy sensor state for ${this.occupancySensorConfig.name}:`, error);
+    });
   }
 
-  /**
-   * Handle the "GET" requests from HomeKit
-   * These are sent when HomeKit wants to know the current state of the accessory, for example, checking if a Light bulb is on.
-   *
-   * GET requests should return as fast as possible. A long delay here will result in
-   * HomeKit being unresponsive and a bad user experience in general.
-   *
-   * If your device takes time to respond you should update the status of your device
-   * asynchronously instead using the `updateCharacteristic` method instead.
-   * In this case, you may decide not to implement `onGet` handlers, which may speed up
-   * the responsiveness of your device in the Home app.
-
-   * @example
-   * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
-   */
   async getOccupancy(): Promise<CharacteristicValue> {
-    // implement your own code to check if the device is on
-    const isOn = this.exampleStates.On;
+    this.log.debug('Triggered GET Occupancy');
+    return this.getOccupancyStatus();
+  }
 
-    this.platform.log.debug('Get Characteristic On ->', isOn);
+  private getOccupancyStatus(): number {
+    return Number(this.occupancySensorState.occupied);
+  }
 
-    // if you need to return an error to show the device as "Not Responding" in the Home app:
-    // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
-
-    return isOn;
+  private setOccupancyStatus(value: CharacteristicValue) {
+    this.log.debug('Setting occupancy status to:', value);
+    this.occupancySensorState.occupied = Boolean(value);
+    if (this.occupancySensorConfig.persistStatusAcrossReboots) {
+      this.storage.setItem(this.occupancySensorConfig.name, this.occupancySensorState).catch((error) => {
+        this.log.error(`Failed to persist occupancy sensor state for ${this.occupancySensorConfig.name}:`, error);
+      });
+    }
+    this.occupancySensorService.updateCharacteristic(this.platform.Characteristic.OccupancyDetected, this.getOccupancyStatus());
   }
 }

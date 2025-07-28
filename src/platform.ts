@@ -65,12 +65,15 @@ export class SmartOccupancyHomebridgePlatform implements DynamicPlatformPlugin {
 
       const alreadyRegisteredSensor = this.accessories.get(uuid);
 
+      const persistPath = this.api.user.persistPath();
+
       if (alreadyRegisteredSensor) {
         this.log.info('Restoring existing accessory from cache:', alreadyRegisteredSensor.displayName);
         new OccupancySensorAccessory(
           this,
           sensorConfig,
           alreadyRegisteredSensor,
+          persistPath,
         );
       } else {
         this.log.info('Adding new accessory:', sensorConfig.name);
@@ -79,6 +82,7 @@ export class SmartOccupancyHomebridgePlatform implements DynamicPlatformPlugin {
           this,
           sensorConfig,
           accessory,
+          persistPath,
         );
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }

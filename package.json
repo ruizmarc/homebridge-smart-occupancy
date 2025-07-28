@@ -37,11 +37,13 @@
   },
   "dependencies": {
     "homebridge-lib": "^7.1.4",
+    "node-persist": "^4.0.4",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@types/node": "^22.13.5",
+    "@types/node-persist": "^3.1.8",
     "eslint": "^9.21.0",
     "homebridge": "^2.0.0-beta.0",
     "nodemon": "^3.1.9",
