@@ -7,7 +7,7 @@
   },
   "description": "HomeBridge HTTP Status Control",
   "plugins": [
-    "homebridge-plugin-name",
+    "homebridge-smart-occupancy",
     "homebridge-config-ui-x"
   ],
   "platforms": [
@@ -23,8 +23,41 @@
       "debug": false
     },
     {
-      "name": "homebridge-plugin-name",
-      "platform": "ExampleHomebridgePlugin"
+      "name": "homebridge-smart-occupancy",
+      "platform": "SmartOccupancy",
+      "sensors": [
+        {
+          "name": "Desk sensor",
+          "identifier": "desk-sensor",
+          "stayOccupiedDelay": 30,
+          "newOccupancyTimeout": 0,
+          "progressiveDelay": true,
+          "progressionStart": 5,
+          "progressionStep": 5,
+          "persistStatusAcrossReboots": true,
+          "alwaysBootAsOccupied": false,
+          "switches": [
+            {
+              "name": "Desk light",
+              "type": "LIGHT_SWITCH",
+              "notificationThreshold": 75,
+              "minimumNotificationTime": 5
+            },
+            {
+              "name": "Desk occupancy switch",
+              "type": "OCCUPANCY_SWITCH",
+              "notificationThreshold": 75,
+              "minimumNotificationTime": 5
+            },
+            {
+              "name": "Desk occupancy notification switch",
+              "type": "NOTIFICATION_SWITCH",
+              "notificationThreshold": 75,
+              "minimumNotificationTime": 5
+            }
+          ]
+        }
+      ]
     }
   ],
   "accessories": []
