@@ -5,19 +5,13 @@ import { OccupancySensorConfig, SwitchConfig } from '../types/config.js';
 import { OccupancySensorAccessory } from './OccupancySensorAccessory.js';
 import { StorageLayer } from '../utils/StorageLayer.js';
 
-/**
- * Platform Accessory
- * An instance of this class is created for each accessory your platform registers
- * Each accessory may expose multiple services of different service types.
- */
-
 interface SwitchState {
   on: boolean;
 }
 
 export class SwitchAccessory {
 
-  private switchService: Service;
+  public switchService: Service;
 
   private storage: StorageLayer;
 
@@ -25,7 +19,7 @@ export class SwitchAccessory {
     on: false,
   };
 
-  private switchUniqueName: string;
+  public readonly switchIdentifier: string;
 
   constructor(
     private readonly platform: SmartOccupancyHomebridgePlatform,
@@ -38,10 +32,10 @@ export class SwitchAccessory {
 
     this.storage = new StorageLayer(this.persistPath);
 
-    this.switchUniqueName = `${switchConfig.name}-${switchConfig.type}`;
+    this.switchIdentifier = `${switchConfig.name}-${switchConfig.type}`;
 
-    this.switchService = this.occupancySensorAccessory.occupancySensorAccessory.getService(this.switchUniqueName)
-      ?? this.occupancySensorAccessory.occupancySensorAccessory.addService(this.platform.Service.Switch, switchConfig.name, this.switchUniqueName);
+    this.switchService = this.occupancySensorAccessory.occupancySensorAccessory.getService(this.switchIdentifier)
+      ?? this.occupancySensorAccessory.occupancySensorAccessory.addService(this.platform.Service.Switch, switchConfig.name, this.switchIdentifier);
 
     this.switchService.setCharacteristic(this.platform.Characteristic.ConfiguredName, switchConfig.name);
 
@@ -56,21 +50,24 @@ export class SwitchAccessory {
   }
 
   private async initStatus() {
-    await this.storage.init();
     if (this.sensorConfig.persistStatusAcrossReboots) {
-      const persistedState = await this.storage.getItem<SwitchState>(this.switchUniqueName);
+      await this.storage.init();
+      const persistedState = await this.storage.getItem<SwitchState>(this.switchIdentifier);
       if (!persistedState) {
         this.log.warn(`No persisted state found for switch ${this.switchConfig.name}, initializing to OFF`);
         this.setStatus(false);
+        this.switchService.updateCharacteristic(this.platform.Characteristic.On, this.getStatus());
         return;
       }
       this.log.info(`Switch ${this.switchConfig.name} initialized with persisted state:`, persistedState);
       this.setStatus(persistedState.on);
+      this.switchService.updateCharacteristic(this.platform.Characteristic.On, this.getStatus());
       return;
     }
     if (this.sensorConfig.alwaysBootAsOccupied) {
       this.log.info(`Switch ${this.switchConfig.name} initialized as ON`);
       this.setStatus(true);
+      this.switchService.updateCharacteristic(this.platform.Characteristic.On, this.getStatus());
       return;
     }
   }
@@ -82,21 +79,25 @@ export class SwitchAccessory {
 
   handleOnSet(value: CharacteristicValue) {
     this.log.debug('Triggered SET On:', value);
-    this.setStatus(value);
+    this.setStatus(Boolean(value));
+    this.occupancySensorAccessory.switchEventSubject.next({
+      switchType: this.switchConfig.type,
+      turnedOn: this.switchState.on,
+      switchIdentifier: this.switchIdentifier,
+    });
   }
 
   private getStatus(): number {
     return Number(this.switchState.on);
   }
 
-  private setStatus(value: CharacteristicValue) {
+  private setStatus(value: boolean) {
     this.log.debug('Setting switch status to:', value);
-    this.switchState.on = Boolean(value);
+    this.switchState.on = value;
     if (this.sensorConfig.persistStatusAcrossReboots) {
-      this.storage.setItem(this.switchUniqueName, this.switchState).catch((error) => {
+      this.storage.setItem(this.switchIdentifier, this.switchState).catch((error) => {
         this.log.error(`Failed to persist switch state for ${this.switchConfig.name}:`, error);
       });
     }
-    this.switchService.updateCharacteristic(this.platform.Characteristic.On, this.getStatus());
   }
 }

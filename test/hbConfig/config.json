@@ -34,12 +34,12 @@
           "progressiveDelay": true,
           "progressionStart": 5,
           "progressionStep": 5,
-          "persistStatusAcrossReboots": true,
+          "persistStatusAcrossReboots": false,
           "alwaysBootAsOccupied": false,
           "switches": [
             {
-              "name": "Desk light",
-              "type": "LIGHT_SWITCH",
+              "name": "Desk light switch",
+              "type": "PRESENCE_SWITCH",
               "notificationThreshold": 75,
               "minimumNotificationTime": 5
             },

@@ -103,12 +103,12 @@
                     "title": "Switch Type",
                     "type": "string",
                     "required": true,
-                    "description": "Type of switch to use with this sensor.<br /><ul><li>Light Switch: It will turn on/off occupation without activating the delay.</li><li>Occupancy Progress Notification Switch: It will toggle on and off after the occupancy delay reaches the configured time.</li><li>Occupancy Switch: It will activate the occupancy sensor, but delay won't start until it turns off.</li><li>Trigger Occupancy Switch: It will trigger the occupancy sensor and the delay.</li><li>Stay-on Switch: It will keep the occupancy sensor active while switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Stay-on Trigger Switch: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Shutoff Switch: It will turn off the occupancy sensor and stop the delay.</li></ul>",
+                    "description": "Type of switch to use with this sensor.<br /><ul><li>Presence Switch: It will turn on/off occupation without activating the delay.</li><li>Occupancy Progress Notification Switch: It will toggle on and off after the occupancy delay reaches the configured time.</li><li>Occupancy Switch: It will activate the occupancy sensor, but delay won't start until it turns off.</li><li>Trigger Occupancy Switch: It will trigger the occupancy sensor and the delay.</li><li>Stay-on Switch: It will keep the occupancy sensor active while switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Stay-on Trigger Switch: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Shutoff Switch: It will turn off the occupancy sensor and stop the delay.</li></ul>",
                     "oneOf": [
                       {
-                        "title": "Light Switch",
+                        "title": "Presence Switch",
                         "enum": [
-                          "LIGHT_SWITCH"
+                          "PRESENCE_SWITCH"
                         ]
                       },
                       {
@@ -154,7 +154,7 @@
                         ]
                       }
                     ],
-                    "default": "LIGHT_SWITCH"
+                    "default": "PRESENCE_SWITCH"
                   },
                   "notificationThreshold": {
                     "title": "Notification Threshold",
