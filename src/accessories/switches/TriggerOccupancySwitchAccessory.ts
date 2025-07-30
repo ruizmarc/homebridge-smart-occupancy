@@ -18,6 +18,30 @@ export class TriggerOccupancySwitchAccessory extends SwitchAccessory {
   }
 
   protected triggerSwitchActions(): void {
-    throw new Error('Method not implemented.');
+    if (this.switchState.isOn && this.shouldCancelTimer()) {
+      this.occupancySensorAccessory.cancelCurrentUnoccupancyTimer();
+      this.occupancySensorAccessory.updateTriggerInfo(this.switchIdentifier, this.switchConfig.type);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: true }), 100);
+      this.log.info(`Trigger Occupancy switch ${this.switchConfig.type} turned ON and keeping occupancy ON`);
+    }
+    const occupancyMightChange = this.occupancyMightChange();
+    if (!occupancyMightChange) {
+      return;
+    }
+    const shouldGoOccupied = this.shouldGoOccupied();
+    if (shouldGoOccupied) {
+      this.log.info(`Trigger Occupancy switch ${this.switchConfig.type} turned ON, setting occupancy to ON`);
+      this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchConfig.type, switchIdentifier: this.switchIdentifier });
+      setTimeout( () => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: true }), 100);
+      return;
+    }
+
+    const shouldStartTimerToUnoccupy = !this.switchState.isOn
+      && this.occupancySensorAccessory.occupancySensorState.occupied
+      && !this.otherSwitchesAreBlockingUnoccupyChange();
+
+    if (shouldStartTimerToUnoccupy) {
+      this.occupancySensorAccessory.startUnoccupyTimer();
+    }
   }
 }

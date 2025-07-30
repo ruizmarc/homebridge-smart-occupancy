@@ -46,10 +46,8 @@
               "type": "OCCUPANCY_SWITCH"
             },
             {
-              "name": "Desk occupancy notification switch",
-              "type": "NOTIFICATION_SWITCH",
-              "notificationThreshold": 75,
-              "minimumNotificationTime": 5
+              "name": "Desk occupancy trigger switch",
+              "type": "TRIGGER_OCCUPANCY_SWITCH"
             },
             {
               "name": "Desk shutoff switch",
@@ -62,6 +60,12 @@
             {
               "name": "Desk stay on trigger switch",
               "type": "TRIGGER_STAY_ON_SWITCH"
+            },
+            {
+              "name": "Desk occupancy notification switch",
+              "type": "NOTIFICATION_SWITCH",
+              "notificationThreshold": 75,
+              "minimumNotificationTime": 5
             }
           ]
         }

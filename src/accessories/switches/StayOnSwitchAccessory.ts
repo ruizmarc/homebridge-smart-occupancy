@@ -27,7 +27,7 @@ export class StayOnSwitchAccessory extends SwitchAccessory {
     if (this.switchState.isOn && this.shouldCancelTimer()) {
       this.occupancySensorAccessory.cancelCurrentUnoccupancyTimer();
       this.occupancySensorAccessory.updateTriggerInfo(this.switchIdentifier, this.switchConfig.type);
-      this.log.info(`Stay On switch ${this.switchConfig.name} turned ON, resetting timer and keeping occupancy ON`);
+      this.log.info(`Stay On switch ${this.switchConfig.name} turned ON and keeping occupancy ON`);
       return;
     }
 

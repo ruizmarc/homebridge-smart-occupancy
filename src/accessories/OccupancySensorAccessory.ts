@@ -188,7 +188,7 @@ export class OccupancySensorAccessory {
 
   public cancelCurrentUnoccupancyTimer() {
     if (this.timerToUnoccupy$) {
-      this.log.debug('Cancelling current unoccupy timer');
+      this.log.info('Cancelling current unoccupy timer');
       this.timerCancelledSubject.next(true);
       this.timerToUnoccupy$ = undefined;
     } else {
