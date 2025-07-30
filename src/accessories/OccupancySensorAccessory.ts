@@ -196,4 +196,10 @@ export class OccupancySensorAccessory {
     }
   }
 
+  public updateTriggerInfo(switchIdentifier: string, switchType: SwitchType) {
+    this.occupancySensorState.triggeredBySwitchIdentifier = switchIdentifier;
+    this.occupancySensorState.triggeredBySwitchType = switchType;
+    this.occupancySensorState.lastTriggeredAt = new Date().toISOString();
+  }
+
 }

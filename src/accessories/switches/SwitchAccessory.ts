@@ -122,11 +122,11 @@ export abstract class SwitchAccessory {
 
   protected occupancyMightChange(): boolean {
     if (this.occupancySensorAccessory.occupancySensorState.occupied && this.switchState.isOn) {
-      this.log.debug(`Occupancy is already ON, no action for switch ${this.switchConfig.type} turned ON event.`);
+      this.log.debug(`Occupancy is already ON when switch ${this.switchConfig.type} turned ON.`);
       return false;
     }
     if (!this.occupancySensorAccessory.occupancySensorState.occupied && !this.switchState.isOn) {
-      this.log.debug(`Occupancy is already OFF, no action for switch ${this.switchConfig.type} turned OFF event.`);
+      this.log.debug(`Occupancy is already OFF when switch ${this.switchConfig.type} turned OFF.`);
       return false;
     }
     return true;

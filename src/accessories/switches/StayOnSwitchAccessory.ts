@@ -20,13 +20,13 @@ export class StayOnSwitchAccessory extends SwitchAccessory {
   protected triggerSwitchActions(): void {
     if (!this.occupancySensorAccessory.occupancySensorState.occupied) {
       this.log.info(`Stay On switch ${this.switchConfig.name} turned ${this.switchState.isOn ? 'ON' : 'OFF'}, but occupancy is already OFF. Ignoring action.`);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), 100);
       return;
     }
-    if (this.shouldCancelTimer()) {
+    
+    if (this.switchState.isOn && this.shouldCancelTimer()) {
       this.occupancySensorAccessory.cancelCurrentUnoccupancyTimer();
-      this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchIdentifier = this.switchIdentifier;
-      this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchType = this.switchConfig.type;
-      this.occupancySensorAccessory.occupancySensorState.lastTriggeredAt = new Date().toISOString();
+      this.occupancySensorAccessory.updateTriggerInfo(this.switchIdentifier, this.switchConfig.type);
       this.log.info(`Stay On switch ${this.switchConfig.name} turned ON, resetting timer and keeping occupancy ON`);
       return;
     }
@@ -38,7 +38,6 @@ export class StayOnSwitchAccessory extends SwitchAccessory {
     if (shouldStartTimerToUnoccupy) {
       this.occupancySensorAccessory.startUnoccupyTimer();
     }
-
   }
 }
 

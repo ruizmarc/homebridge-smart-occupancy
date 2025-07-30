@@ -20,9 +20,7 @@ export class OccupancySwitchAccessory extends SwitchAccessory {
   protected triggerSwitchActions(): void {
     if (this.shouldCancelTimer()) {
       this.occupancySensorAccessory.cancelCurrentUnoccupancyTimer();
-      this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchIdentifier = this.switchIdentifier;
-      this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchType = this.switchConfig.type;
-      this.occupancySensorAccessory.occupancySensorState.lastTriggeredAt = new Date().toISOString();
+      this.occupancySensorAccessory.updateTriggerInfo(this.switchIdentifier, this.switchConfig.type);
       this.log.info(`Occupancy switch ${this.switchConfig.type} turned ON, resetting timer and keeping occupancy ON`);
     }
     const occupancyMightChange = this.occupancyMightChange();

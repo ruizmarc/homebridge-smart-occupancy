@@ -58,6 +58,10 @@
             {
               "name": "Desk stay on switch",
               "type": "STAY_ON_SWITCH"
+            },
+            {
+              "name": "Desk stay on trigger switch",
+              "type": "TRIGGER_STAY_ON_SWITCH"
             }
           ]
         }
