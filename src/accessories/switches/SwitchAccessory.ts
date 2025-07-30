@@ -61,28 +61,28 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
       await this.storage.init();
       const persistedState = await this.storage.getItem<SwitchState>(this.switchIdentifier);
       if (!persistedState) {
-        this.log.warn(`No persisted state found for switch ${this.switchConfig.name}, initializing to OFF`);
+        this.log.warn(`${this.switchConfig.type}: No persisted state found for switch ${this.switchConfig.name}, initializing to OFF`);
         this.setStatus(false);
         return;
       }
-      this.log.info(`Switch ${this.switchConfig.name} initialized with persisted state:`, persistedState);
+      this.log.info(`${this.switchConfig.type}: Switch ${this.switchConfig.name} initialized with persisted state:`, persistedState);
       this.setStatus(persistedState.isOn);
       return;
     }
     if (this.sensorConfig.alwaysBootAsOccupied) {
-      this.log.info(`Switch ${this.switchConfig.name} initialized as ON`);
+      this.log.info(`${this.switchConfig.type}: Switch ${this.switchConfig.name} initialized as ON`);
       this.setStatus(true);
       return;
     }
   }
 
   handleOnGet(): CharacteristicValue {
-    this.log.debug('Triggered GET On');
+    this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} Triggered GET On`);
     return this.getStatusCharacteristic();
   }
 
   handleOnSet(value: CharacteristicValue) {
-    this.log.debug('Triggered SET On:', value);
+    this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} Triggered SET On -> `, value);
     this.setStatus(Boolean(value), { updateCharacteristic: false, triggerSwitchActions: true });
   }
 
@@ -91,7 +91,7 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
   }
 
   public setStatus(value: boolean, options: SetSwitchStatusOptions = { updateCharacteristic: true, triggerSwitchActions: true }) {
-    this.log.debug('Setting switch status to:', value);
+    this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} Setting switch status to -> `, value);
     this.switchState.isOn = value;
     if (this.sensorConfig.persistStatusAcrossReboots) {
       this.storage.setItem(this.switchIdentifier, this.switchState).catch((error) => {
@@ -124,11 +124,11 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
 
   protected occupancyMightChange(): boolean {
     if (this.occupancySensorAccessory.occupancySensorState.occupied && this.switchState.isOn) {
-      this.log.debug(`Occupancy is already ON when switch ${this.switchConfig.type} turned ON.`);
+      this.log.debug(`${this.switchConfig.type}: Occupancy is already ON when switch ${this.switchConfig.name} turned ON.`);
       return false;
     }
     if (!this.occupancySensorAccessory.occupancySensorState.occupied && !this.switchState.isOn) {
-      this.log.debug(`Occupancy is already OFF when switch ${this.switchConfig.type} turned OFF.`);
+      this.log.debug(`${this.switchConfig.type}: Occupancy is already OFF when switch ${this.switchConfig.name} turned OFF.`);
       return false;
     }
     return true;

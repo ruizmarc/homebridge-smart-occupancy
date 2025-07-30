@@ -25,7 +25,7 @@ export class PresenceSwitchAccessory extends SwitchAccessory {
 
     const shouldGoOccupied = this.shouldGoOccupied();
     if (shouldGoOccupied) {
-      this.log.info(`Presence switch ${this.switchConfig.type} turned ON, setting occupancy to ON`);
+      this.log.info(`${this.switchConfig.type}: ${this.switchConfig.name} turned ON, setting occupancy to ON`);
       this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchConfig.type, switchIdentifier: this.switchIdentifier });
       return;
     }
@@ -38,7 +38,7 @@ export class PresenceSwitchAccessory extends SwitchAccessory {
       && triggerSwitchIsMyself;
 
     if (shouldGoUnoccupied) {
-      this.log.info(`Presence switch ${this.switchConfig.type} turned OFF, setting occupancy to OFF`);
+      this.log.info(`${this.switchConfig.type}: ${this.switchConfig.name} turned OFF, setting occupancy to OFF`);
       this.occupancySensorAccessory.setOccupancyStatus(false, { switchType: this.switchConfig.type, switchIdentifier: this.switchIdentifier });
       return;
     }

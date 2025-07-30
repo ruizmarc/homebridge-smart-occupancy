@@ -18,24 +18,24 @@ export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwi
     super(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
 
     this.occupancySensorAccessory.timerStarted$.subscribe(() => {
-      const timerDuration = this.sensorConfig.stayOccupiedDelay * (this.switchConfig.notificationThreshold / 100) * 1000;
-      if (timerDuration < this.switchConfig.minimumNotificationTime) {
+      const timerDurationSeconds = this.occupancySensorAccessory.occupancySensorState.nextDelaySeconds * (this.switchConfig.notificationThreshold / 100);
+      if (timerDurationSeconds < this.switchConfig.minimumNotificationTime) {
         return;
       }
-      this.log.debug(`Notification switch ${this.switchConfig.name} will trigger after ${timerDuration / 1000} seconds`);
-      timer(timerDuration).pipe(
+      this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} will trigger after ${timerDurationSeconds} seconds`);
+      timer(timerDurationSeconds * 1000).pipe(
         takeUntil(
           this.occupancySensorAccessory.timerCancelled$
             .pipe(
               take(1),
               map((cancelledEvent) => {
-                this.log.debug(`Notification switch ${this.switchConfig.name} timer cancelled`);
+                this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} timer cancelled`);
                 return cancelledEvent;
               }),
             ),
         ),
       ).subscribe(() => {
-        this.log.info(`Notification switch ${this.switchConfig.name} triggered after ${timerDuration / 1000} seconds`);
+        this.log.info(`${this.switchConfig.type}: ${this.switchConfig.name} triggered after ${timerDurationSeconds} seconds`);
         this.setStatus(true);
       });
     });
@@ -43,12 +43,12 @@ export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwi
 
   protected triggerSwitchActions(): void {
     if (!this.switchState.isOn) {
-      this.log.warn(`Notification switch ${this.switchConfig.name} is OFF, no action taken`);
+      this.log.warn(`${this.switchConfig.type}: ${this.switchConfig.name} is OFF, no action taken`);
       return;
     }
     setTimeout(() => {
       this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false });
-      this.log.info(`Notification switch ${this.switchConfig.name} turned OFF, no action required`);
+      this.log.info(`${this.switchConfig.type}: ${this.switchConfig.name} turned OFF, no action required`);
     }, this.MANUAL_STATUS_CHANGE_TIMEOUT);
   }
 }

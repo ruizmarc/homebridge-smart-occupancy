@@ -49,7 +49,7 @@
               "title": "Progressive Delay",
               "type": "boolean",
               "default": false,
-              "description": "Enable progressive delay to increase the delay duration with each activation until it reaches your delay config."
+              "description": "Enable progressive delay to increase the delay duration with each delay activation until it reaches your delay config. This is useful when motion sensors are used in areas with frequent activity, allowing the delay to adapt to usage, for example if they are entering or leaving the covered area by the sensor frequently so that you want to avoid unnecessary on/off triggers.<br />When enabled, the delay will start at the configured `progressionStart` value and increase by `progressionStep` seconds each time the delay is cancelled by another activation until it reaches the configured `delay` value."
             },
             "progressionStart": {
               "title": "Progressive Delay Start",
