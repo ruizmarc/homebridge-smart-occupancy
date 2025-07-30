@@ -172,7 +172,7 @@ export class OccupancySensorAccessory {
 
   public startUnoccupyTimer() {
     this.cancelCurrentUnoccupancyTimer();
-    this.log.debug(`Starting timer to unoccupy after delay: ${this.occupancySensorConfig.stayOccupiedDelay}`);
+    this.log.info(`Starting timer to unoccupy after delay: ${this.occupancySensorConfig.stayOccupiedDelay}`);
     this.timerToUnoccupy$ = timer(this.occupancySensorConfig.stayOccupiedDelay * 1000);
     this.timerToUnoccupy$.pipe(
       takeUntil(this.timerCancelledSubject),

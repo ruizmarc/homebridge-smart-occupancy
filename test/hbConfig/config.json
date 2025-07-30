@@ -52,8 +52,12 @@
               "minimumNotificationTime": 5
             },
             {
-              "name": "Shutoff switch",
+              "name": "Desk shutoff switch",
               "type": "SHUTOFF_SWITCH"
+            },
+            {
+              "name": "Desk stay on switch",
+              "type": "STAY_ON_SWITCH"
             }
           ]
         }
