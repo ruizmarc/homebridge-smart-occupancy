@@ -9,17 +9,16 @@ import { SwitchFactory } from './switches/SwitchFactory.js';
 
 interface OccupancySensorState {
   occupied: boolean;
+  nextDelaySeconds: number;
   triggeredBySwitchIdentifier?: string;
   triggeredBySwitchType?: SwitchType;
-  lastTriggeredAt?: string; // ISO date string
+  lastTriggeredAt?: string; // ISO date string,
 }
 
 export class OccupancySensorAccessory {
   private occupancySensorService!: Service;
 
-  public occupancySensorState: OccupancySensorState = {
-    occupied: false,
-  };
+  public occupancySensorState: OccupancySensorState;
 
   private storage: StorageLayer;
 
@@ -46,6 +45,14 @@ export class OccupancySensorAccessory {
   ) {
     this.storage = new StorageLayer(this.persistPath);
     this.log = platform.log;
+
+    this.occupancySensorState = {
+      occupied: false,
+      nextDelaySeconds: occupancySensorConfig.progressiveDelay ? occupancySensorConfig.progressionStart : occupancySensorConfig.stayOccupiedDelay,
+      lastTriggeredAt: undefined,
+      triggeredBySwitchIdentifier: undefined,
+      triggeredBySwitchType: undefined,
+    };
 
     this.initAccessoryInformation();
     this.initSwitches();
@@ -150,7 +157,10 @@ export class OccupancySensorAccessory {
     triggeredBy: { switchType: SwitchType; switchIdentifier: string } | null = null,
     options: { updateAccessoryService?: boolean } = { updateAccessoryService: true },
   ) {
-    this.log.debug('Setting occupancy status to:', occupied);
+    this.log.info('Setting occupancy status to:', occupied);
+    if (occupied && !this.occupancySensorState.occupied) {
+      this.updateNextDelayToUse();
+    }
     this.occupancySensorState.occupied = occupied;
     if (this.occupancySensorState.occupied) {
       this.occupancySensorState.triggeredBySwitchType = triggeredBy?.switchType;
@@ -172,8 +182,8 @@ export class OccupancySensorAccessory {
 
   public startUnoccupyTimer() {
     this.cancelCurrentUnoccupancyTimer();
-    this.log.info(`Starting timer to unoccupy after delay: ${this.occupancySensorConfig.stayOccupiedDelay}`);
-    this.timerToUnoccupy$ = timer(this.occupancySensorConfig.stayOccupiedDelay * 1000);
+    this.log.info(`Starting timer to unoccupy after delay: ${this.occupancySensorState.nextDelaySeconds} seconds`);
+    this.timerToUnoccupy$ = timer(this.occupancySensorState.nextDelaySeconds * 1000);
     this.timerToUnoccupy$.pipe(
       takeUntil(this.timerCancelledSubject),
     )
@@ -196,10 +206,49 @@ export class OccupancySensorAccessory {
     }
   }
 
-  public updateTriggerInfo(switchIdentifier: string, switchType: SwitchType) {
+  public updateStatusWithNewTriggerInfo(switchIdentifier: string, switchType: SwitchType) {
+    this.updateNextDelayToUse();
     this.occupancySensorState.triggeredBySwitchIdentifier = switchIdentifier;
     this.occupancySensorState.triggeredBySwitchType = switchType;
     this.occupancySensorState.lastTriggeredAt = new Date().toISOString();
+    if (this.occupancySensorConfig.persistStatusAcrossReboots) {
+      this.storage.setItem(this.occupancySensorAccessory.UUID, this.occupancySensorState).catch((error) => {
+        this.log.error(`Failed to persist occupancy sensor state for ${this.occupancySensorConfig.name}:`, error);
+      });
+    }
+  }
+
+  public updateNextDelayToUse() {
+    if (!this.occupancySensorConfig.progressiveDelay) {
+      return;
+    }
+    const firstActivationInLongTime = !this.timerToUnoccupy$ && !this.isLastActivationInsideProgressiveDelay() && !this.occupancySensorState.occupied;
+    if (firstActivationInLongTime) {
+      this.occupancySensorState.nextDelaySeconds = this.occupancySensorConfig.progressiveDelay
+        ? this.occupancySensorConfig.progressionStart
+        : this.occupancySensorConfig.stayOccupiedDelay;
+      this.log.debug(`No previous active timer, resetting next delay to ${this.occupancySensorState.nextDelaySeconds} seconds`);
+      return;
+    }
+    if (this.occupancySensorState.nextDelaySeconds >= this.occupancySensorConfig.stayOccupiedDelay) {
+      this.log.debug('Next delay has reached the maximum configured delay, not increasing further');
+      return;
+    }
+    this.occupancySensorState.nextDelaySeconds += this.occupancySensorConfig.progressionStep;
+    if (this.occupancySensorState.nextDelaySeconds > this.occupancySensorConfig.stayOccupiedDelay) {
+      this.occupancySensorState.nextDelaySeconds = this.occupancySensorConfig.stayOccupiedDelay;
+    }
+    this.log.debug(`Updated next delay to: ${this.occupancySensorState.nextDelaySeconds} seconds`);
+  }
+
+  private isLastActivationInsideProgressiveDelay(): boolean {
+    if (!this.occupancySensorState.lastTriggeredAt) {
+      return false;
+    }
+    const lastTriggeredTime = new Date(this.occupancySensorState.lastTriggeredAt).getTime();
+    const currentTime = Date.now();
+    const timeSinceLastTrigger = (currentTime - lastTriggeredTime) / 1000;
+    return timeSinceLastTrigger < this.occupancySensorState.nextDelaySeconds;
   }
 
 }
