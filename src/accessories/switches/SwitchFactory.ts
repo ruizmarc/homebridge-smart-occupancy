@@ -1,5 +1,5 @@
 import { Logging } from 'homebridge';
-import { OccupancySensorConfig, SwitchConfig, SwitchType } from '../../types/config.js';
+import { NotificationSwitchConfig, OccupancySensorConfig, SwitchConfig, SwitchType } from '../../types/config.js';
 import { NotificationSwitchAccessory } from './NotificationSwitchAccessory.js';
 import { OccupancySwitchAccessory } from './OccupancySwitchAccessory.js';
 import { PresenceSwitchAccessory } from './PresenceSwitchAccessory.js';
@@ -25,7 +25,7 @@ export class SwitchFactory {
     case SwitchType.PRESENCE_SWITCH:
       return new PresenceSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
     case SwitchType.NOTIFICATION_SWITCH:
-      return new NotificationSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
+      return new NotificationSwitchAccessory(platform, occupancySensorAccessory, switchConfig as NotificationSwitchConfig, sensorConfig, persistPath, log);
     case SwitchType.OCCUPANCY_SWITCH:
       return new OccupancySwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
     case SwitchType.TRIGGER_OCCUPANCY_SWITCH:

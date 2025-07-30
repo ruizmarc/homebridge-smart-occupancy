@@ -33,6 +33,6 @@ export class ShutoffSwitchAccessory extends SwitchAccessory {
         }
       }
       this.occupancySensorAccessory.setOccupancyStatus(false);
-    }, 100);
+    }, this.MANUAL_STATUS_CHANGE_TIMEOUT);
   }
 }

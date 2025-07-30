@@ -14,11 +14,13 @@ interface SetSwitchStatusOptions {
   triggerSwitchActions?: boolean;
 }
 
-export abstract class SwitchAccessory {
+export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig> {
 
   public switchService: Service;
 
   protected storage: StorageLayer;
+
+  protected readonly MANUAL_STATUS_CHANGE_TIMEOUT = 1000; // 1 second
 
   public switchState: SwitchState = {
     isOn: false,
@@ -29,7 +31,7 @@ export abstract class SwitchAccessory {
   constructor(
     protected readonly platform: SmartOccupancyHomebridgePlatform,
     protected readonly occupancySensorAccessory: OccupancySensorAccessory,
-    protected readonly switchConfig: SwitchConfig,
+    protected readonly switchConfig: CONFIG,
     protected readonly sensorConfig: OccupancySensorConfig,
     protected readonly persistPath: string,
     protected readonly log: Logging,

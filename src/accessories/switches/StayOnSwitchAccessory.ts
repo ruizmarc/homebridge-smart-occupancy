@@ -20,7 +20,7 @@ export class StayOnSwitchAccessory extends SwitchAccessory {
   protected triggerSwitchActions(): void {
     if (!this.occupancySensorAccessory.occupancySensorState.occupied) {
       this.log.info(`Stay On switch ${this.switchConfig.name} turned ${this.switchState.isOn ? 'ON' : 'OFF'}, but occupancy is already OFF. Ignoring action.`);
-      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), 100);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       return;
     }
     

@@ -21,7 +21,7 @@ export class TriggerOccupancySwitchAccessory extends SwitchAccessory {
     if (this.switchState.isOn && this.shouldCancelTimer()) {
       this.occupancySensorAccessory.cancelCurrentUnoccupancyTimer();
       this.occupancySensorAccessory.updateTriggerInfo(this.switchIdentifier, this.switchConfig.type);
-      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: true }), 100);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: true }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       this.log.info(`Trigger Occupancy switch ${this.switchConfig.type} turned ON and keeping occupancy ON`);
     }
     const occupancyMightChange = this.occupancyMightChange();
@@ -32,7 +32,7 @@ export class TriggerOccupancySwitchAccessory extends SwitchAccessory {
     if (shouldGoOccupied) {
       this.log.info(`Trigger Occupancy switch ${this.switchConfig.type} turned ON, setting occupancy to ON`);
       this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchConfig.type, switchIdentifier: this.switchIdentifier });
-      setTimeout( () => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: true }), 100);
+      setTimeout( () => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: true }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       return;
     }
 

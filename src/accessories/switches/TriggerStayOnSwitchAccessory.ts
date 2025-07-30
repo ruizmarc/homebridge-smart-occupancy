@@ -22,7 +22,7 @@ export class TriggerStayOnSwitchAccessory extends SwitchAccessory {
       this.log.info(`Trigger Stay On switch ${this.switchConfig.name} turned ${this.switchState.isOn ? 'ON' : 'OFF'}, ` +
         'but occupancy is already OFF. Ignoring action.');
       if (this.switchState.isOn) {
-        setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), 100);
+        setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       }
       return;
     }
@@ -31,12 +31,12 @@ export class TriggerStayOnSwitchAccessory extends SwitchAccessory {
       this.occupancySensorAccessory.cancelCurrentUnoccupancyTimer();
       this.occupancySensorAccessory.updateTriggerInfo(this.switchIdentifier, this.switchConfig.type);
       this.log.info(`Trigger Stay On switch ${this.switchConfig.name} turned ON and keeping occupancy ON`);
-      setTimeout(() => this.setStatus(false), 100);
+      setTimeout(() => this.setStatus(false), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       return;
     } else if (this.switchState.isOn) {
       this.log.info(`Trigger Stay On switch ${this.switchConfig.name} turned ON, no action required`);
       this.occupancySensorAccessory.updateTriggerInfo(this.switchIdentifier, this.switchConfig.type);
-      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), 100);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       return;
     }
 
