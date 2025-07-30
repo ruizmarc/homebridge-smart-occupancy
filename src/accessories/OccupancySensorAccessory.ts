@@ -1,10 +1,11 @@
 import type { CharacteristicValue, Logging, PlatformAccessory, Service } from 'homebridge';
+import { Observable, Subject, takeUntil, timer } from 'rxjs';
 
 import type { SmartOccupancyHomebridgePlatform } from '../platform.js';
 import { OccupancySensorConfig, SwitchType } from '../types/config.js';
-import { SwitchAccessory } from './SwitchAccessory.js';
+import { SwitchAccessory } from './switches/SwitchAccessory.js';
 import { StorageLayer } from '../utils/StorageLayer.js';
-import { Observable, Subject, takeUntil, timer } from 'rxjs';
+import { SwitchFactory } from './switches/SwitchFactory.js';
 
 interface OccupancySensorState {
   occupied: boolean;
@@ -13,22 +14,16 @@ interface OccupancySensorState {
   lastTriggeredAt?: string; // ISO date string
 }
 
-interface SwitchEvent {
-  switchIdentifier: string;
-  switchType: SwitchType;
-  turnedOn: boolean;
-}
-
 export class OccupancySensorAccessory {
   private occupancySensorService!: Service;
 
-  private occupancySensorState: OccupancySensorState = {
+  public occupancySensorState: OccupancySensorState = {
     occupied: false,
   };
 
   private storage: StorageLayer;
 
-  private switches: Map<string, SwitchAccessory> = new Map();
+  public switches: Map<string, SwitchAccessory> = new Map();
 
   private log: Logging;
 
@@ -40,8 +35,6 @@ export class OccupancySensorAccessory {
 
   private timerCancelledSubject = new Subject<boolean>();
   public timerCancelled$ = this.timerCancelledSubject.asObservable();
-
-  public switchEventSubject = new Subject<SwitchEvent>();
 
   private timerToUnoccupy$?: Observable<0>;
 
@@ -60,8 +53,6 @@ export class OccupancySensorAccessory {
     this.initSensorStatus().catch((error) => {
       this.log.error(`Failed to initialize occupancy sensor status for ${occupancySensorConfig.name}:`, error);
     });
-
-    this.subscribeToSwitchChanges();
   }
 
   private initAccessoryInformation() {
@@ -76,13 +67,13 @@ export class OccupancySensorAccessory {
     this.occupancySensorService.setCharacteristic(this.platform.Characteristic.Name, this.occupancySensorAccessory.displayName);
 
     this.occupancySensorService.getCharacteristic(this.platform.Characteristic.OccupancyDetected)
-      .onSet(this.setOccupancy.bind(this))
-      .onGet(this.getOccupancy.bind(this));
+      .onSet(this.handleSetOccupancy.bind(this))
+      .onGet(this.handleGetOccupancy.bind(this));
   }
 
   private initSwitches() {
     for (const switchConfig of (this.occupancySensorConfig.switches ?? [])) {
-      const switchAccessory = new SwitchAccessory(
+      const switchAccessory = SwitchFactory.createSwitch(
         this.platform,
         this,
         switchConfig,
@@ -114,7 +105,6 @@ export class OccupancySensorAccessory {
         }
       }
     }
-    this.log(JSON.stringify(this.occupancySensorAccessory.services, null, 2));
   }
 
   private async initSensorStatus() {
@@ -137,73 +127,38 @@ export class OccupancySensorAccessory {
     }
   }
 
-  private subscribeToSwitchChanges() {
-    this.switchEventSubject.subscribe((event) => {
-      this.log.debug(`Switch event received: ${event.switchType} turned ${event.turnedOn ? 'ON' : 'OFF'}`);
-
-      switch (event.switchType) {
-      case SwitchType.PRESENCE_SWITCH: {
-        this.handlePresenceSwitchEvent(event);
-        break;
-      }
-      case SwitchType.OCCUPANCY_SWITCH: {
-        this.handleOccupancySwitchEvent(event);
-        break;
-      }
-      case SwitchType.TRIGGER_OCCUPANCY_SWITCH: {
-        // Handle trigger occupancy switch events
-        break;
-      }
-      case SwitchType.NOTIFICATION_SWITCH: {
-        // Handle notification switch events
-        break;
-      }
-      case SwitchType.STAY_ON_SWITCH: {
-        // Handle stay on switch events
-        break;
-      }
-      case SwitchType.TRIGGER_STAY_ON_SWITCH: {
-        // Handle trigger stay on switch events
-        break;
-      }
-      case SwitchType.SHUTOFF_SWITCH: {
-        // Handle shutoff switch events
-        break;
-      }
-      default: {
-        this.log.warn(`Unhandled switch type: ${event.switchType}`);
-        break;
-      }
-      }
-    });
-
-  }
-
-  async setOccupancy(value: CharacteristicValue) {
+  async handleSetOccupancy(value: CharacteristicValue) {
     this.log.debug('Triggered SET Occupancy:', value);
     this.setOccupancyStatus(Boolean(value), undefined, { updateAccessoryService: false });
   }
 
-  async getOccupancy(): Promise<CharacteristicValue> {
+  async handleGetOccupancy(): Promise<CharacteristicValue> {
     this.log.debug('Triggered GET Occupancy');
     return this.getOccupancyStatusCharacteristicValue();
   }
 
   private getOccupancyStatusCharacteristicValue(): number {
-    return Number(this.occupancySensorState.occupied);
+    if (this.occupancySensorState.occupied) {
+      return this.platform.Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
+    } else {
+      return this.platform.Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
+    }
   }
 
-  private setOccupancyStatus(
+  public setOccupancyStatus(
     occupied: boolean,
     triggeredBy: { switchType: SwitchType; switchIdentifier: string } | null = null,
     options: { updateAccessoryService?: boolean } = { updateAccessoryService: true },
   ) {
     this.log.debug('Setting occupancy status to:', occupied);
     this.occupancySensorState.occupied = occupied;
-    this.occupancySensorState.triggeredBySwitchType = triggeredBy?.switchType;
-    this.occupancySensorState.triggeredBySwitchIdentifier = triggeredBy?.switchIdentifier;
     if (this.occupancySensorState.occupied) {
+      this.occupancySensorState.triggeredBySwitchType = triggeredBy?.switchType;
+      this.occupancySensorState.triggeredBySwitchIdentifier = triggeredBy?.switchIdentifier;
       this.occupancySensorState.lastTriggeredAt = new Date().toISOString();
+    } else {
+      this.occupancySensorState.triggeredBySwitchType = undefined;
+      this.occupancySensorState.triggeredBySwitchIdentifier = undefined;
     }
     if (this.occupancySensorConfig.persistStatusAcrossReboots) {
       this.storage.setItem(this.occupancySensorAccessory.UUID, this.occupancySensorState).catch((error) => {
@@ -215,95 +170,8 @@ export class OccupancySensorAccessory {
     }
   }
 
-  private handlePresenceSwitchEvent(event: SwitchEvent) {
-    const occupancyMightChange = this.checkIfOccupancyMightChange(event);
-    if (!occupancyMightChange) {
-      return;
-    }
-
-    const shouldGoOccupied = this.checkIfShouldGoOccupied(event);
-    if (shouldGoOccupied) {
-      this.log.info(`Presence switch ${event.switchType} turned ON, setting occupancy to ON`);
-      this.setOccupancyStatus(true, { switchType: event.switchType, switchIdentifier: event.switchIdentifier });
-      return;
-    }
-
-    const shouldGoUnoccupied = !event.turnedOn
-      && this.occupancySensorState.occupied
-      && this.occupancySensorState.triggeredBySwitchType === event.switchType
-      && this.occupancySensorState.triggeredBySwitchIdentifier === event.switchIdentifier;
-
-    if (shouldGoUnoccupied) {
-      this.log.info(`Presence switch ${event.switchType} turned OFF, setting occupancy to OFF`);
-      this.setOccupancyStatus(false, { switchType: event.switchType, switchIdentifier: event.switchIdentifier });
-      return;
-    }
-  }
-
-  private handleOccupancySwitchEvent(event: SwitchEvent) {
-    if (this.checkIfShouldCancelTimer(event)) {
-      this.cancelCurrentUnoccupyTimer();
-      this.occupancySensorState.triggeredBySwitchIdentifier = event.switchIdentifier;
-      this.occupancySensorState.triggeredBySwitchType = event.switchType;
-      this.occupancySensorState.lastTriggeredAt = new Date().toISOString();
-      this.log.info(`Occupancy switch ${event.switchType} turned ON, resetting timer and keeping occupancy ON`);
-    }
-    const occupancyMightChange = this.checkIfOccupancyMightChange(event);
-    if (!occupancyMightChange) {
-      return;
-    }
-    const shouldGoOccupied = this.checkIfShouldGoOccupied(event);
-    if (shouldGoOccupied) {
-      this.log.info(`Occupancy switch ${event.switchType} turned ON, setting occupancy to ON`);
-      this.setOccupancyStatus(true, { switchType: event.switchType, switchIdentifier: event.switchIdentifier });
-      return;
-    }
-    const shouldStartTimerToUnoccupy = !event.turnedOn
-      && this.occupancySensorState.occupied
-      && this.occupancySensorState.triggeredBySwitchType === event.switchType
-      && this.occupancySensorState.triggeredBySwitchIdentifier === event.switchIdentifier;
-
-    if (shouldStartTimerToUnoccupy) {
-      this.startUnoccupyTimer();
-    }
-  }
-
-  private checkIfShouldCancelTimer(event: SwitchEvent): boolean {
-    return this.occupancySensorState.occupied
-      && event.turnedOn
-      && this.occupancySensorState.triggeredBySwitchType === event.switchType;
-  }
-
-  private checkIfOccupancyMightChange(event: SwitchEvent): boolean {
-    if (this.occupancySensorState.occupied && event.turnedOn) {
-      this.log.debug(`Occupancy is already ON, ignoring switch ${event.switchType} turned ON event.`);
-      return false;
-    }
-    if (!this.occupancySensorState.occupied && !event.turnedOn) {
-      this.log.debug(`Occupancy is already OFF, ignoring switch ${event.switchType} turned OFF event.`);
-      return false;
-    }
-    return true;
-  }
-
-  private checkIfShouldGoOccupied(event: SwitchEvent): boolean {
-    return event.turnedOn
-      && !this.occupancySensorState.occupied
-      && this.checkIfEnoughTimePassedSinceLastTrigger();
-  }
-
-  private checkIfEnoughTimePassedSinceLastTrigger(): boolean {
-    if (!this.occupancySensorState.lastTriggeredAt) {
-      return true;
-    }
-    const lastTriggeredTime = new Date(this.occupancySensorState.lastTriggeredAt).getTime();
-    const currentTime = Date.now();
-    const timeDifference = currentTime - lastTriggeredTime;
-    return timeDifference >= (this.occupancySensorConfig.newOccupancyTimeout ?? 0) * 1000;
-  }
-
-  private startUnoccupyTimer() {
-    this.cancelCurrentUnoccupyTimer();
+  public startUnoccupyTimer() {
+    this.cancelCurrentUnoccupancyTimer();
     this.log.debug(`Starting timer to unoccupy after delay: ${this.occupancySensorConfig.stayOccupiedDelay}`);
     this.timerToUnoccupy$ = timer(this.occupancySensorConfig.stayOccupiedDelay * 1000);
     this.timerToUnoccupy$.pipe(
@@ -318,7 +186,7 @@ export class OccupancySensorAccessory {
     this.timerStartedSubject.next(true);
   }
 
-  private cancelCurrentUnoccupyTimer() {
+  public cancelCurrentUnoccupancyTimer() {
     if (this.timerToUnoccupy$) {
       this.log.debug('Cancelling current unoccupy timer');
       this.timerCancelledSubject.next(true);
