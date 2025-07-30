@@ -248,7 +248,7 @@ export class OccupancySensorAccessory {
     const lastTriggeredTime = new Date(this.occupancySensorState.lastTriggeredAt).getTime();
     const currentTime = Date.now();
     const timeSinceLastTrigger = (currentTime - lastTriggeredTime) / 1000;
-    return timeSinceLastTrigger < this.occupancySensorState.nextDelaySeconds;
+    return timeSinceLastTrigger < (this.occupancySensorState.nextDelaySeconds + this.occupancySensorConfig.progressionStep);
   }
 
 }
