@@ -4,7 +4,7 @@
   "type": "module",
   "version": "1.0.0",
   "private": false,
-  "description": "Create flexible and customizable time-based occupancy sensors for Homebridge.",
+  "description": "Create flexible and customizable occupancy sensors for Homebridge with extra switches and triggers to control sensor and occupancy delay behavior.",
   "author": "ruizmarc",
   "license": "Apache-2.0",
   "homepage": "https://github.com/ruizmarc/homebridge-smart-occupancy#readme",
@@ -16,13 +16,22 @@
     "url": "https://github.com/ruizmarc/homebridge-smart-occupancy/issues"
   },
   "keywords": [
-    "homebridge-plugin",
-    "occupancy",
-    "sensor",
     "homebridge",
     "homekit",
-    "smart-home",
-    "homebridge-smart-occupancy"
+    "homebridge-plugin",
+    "homebridge-smart-occupancy",
+    "smart home",
+    "occupancy sensor",
+    "sensor",
+    "motion sensor",
+    "delay",
+    "switch"
+  ],
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/ruizmarc"
+    }
   ],
   "main": "dist/index.js",
   "engines": {
