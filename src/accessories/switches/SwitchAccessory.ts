@@ -98,9 +98,9 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
     return Number(this.switchState.isOn);
   }
 
-  public setStatus(value: boolean, options: SetSwitchStatusOptions = { updateCharacteristic: true, triggerSwitchActions: true }) {
-    this.log.debug(`${this.switchType}: ${this.switchConfig.name} Setting switch status to -> `, value);
-    this.switchState.isOn = value;
+  public setStatus(status: boolean, options: SetSwitchStatusOptions = { updateCharacteristic: true, triggerSwitchActions: true }) {
+    this.log.debug(`${this.switchType}: ${this.switchConfig.name} Setting switch status to -> `, status);
+    this.switchState.isOn = status;
     if (this.sensorConfig.persistStatusAcrossReboots && this.storage) {
       this.storage.setItem(this.switchIdentifier, this.switchState).catch((error) => {
         this.log.error(`Failed to persist switch state for ${this.switchConfig.name}:`, error);
@@ -110,11 +110,17 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
       this.switchService.updateCharacteristic(this.platform.Characteristic.On, this.getStatusCharacteristic());
     }
     if (options.triggerSwitchActions) {
-      this.triggerSwitchActions();
+      if (status) {
+        this.triggerSwitchOnActions();
+      } else {
+        this.triggerSwitchOffActions();
+      }
     }
   }
 
-  protected abstract triggerSwitchActions(): void;
+  protected abstract triggerSwitchOnActions(): void;
+
+  protected abstract triggerSwitchOffActions(): void;
 
   protected shouldCancelTimer(): boolean {
     const cancelableTimerSwitchTypes: SwitchType[] = [
@@ -155,7 +161,8 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
     const lastTriggeredTime = new Date(this.occupancySensorAccessory.occupancySensorState.lastTriggeredAt).getTime();
     const currentTime = Date.now();
     const timeDifference = currentTime - lastTriggeredTime;
-    return timeDifference >= (this.sensorConfig.newOccupancyTimeout ?? 0) * 1000;
+    const enoughTimeHasPassed = timeDifference >= (this.sensorConfig.newOccupancyTimeout ?? 0) * 1000;
+    return enoughTimeHasPassed;
   }
 
   protected otherSwitchesAreBlockingUnoccupyChange(): boolean {

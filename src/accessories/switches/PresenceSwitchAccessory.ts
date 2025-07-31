@@ -27,19 +27,24 @@ export class PresenceSwitchAccessory extends SwitchAccessory {
     });
   }
 
-  protected triggerSwitchActions(): void {
+  protected triggerSwitchOnActions(): void {
     const occupancyMightChange = this.occupancyMightChange();
     if (!occupancyMightChange) {
       return;
     }
-
     const shouldGoOccupied = this.shouldGoOccupied();
     if (shouldGoOccupied) {
       this.log.info(`${this.switchType}: ${this.switchConfig.name} turned ON, setting occupancy to ON`);
       this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchType, switchIdentifier: this.switchIdentifier });
       return;
     }
-
+  }
+  
+  protected triggerSwitchOffActions(): void {
+    const occupancyMightChange = this.occupancyMightChange();
+    if (!occupancyMightChange) {
+      return;
+    }
     const triggerSwitchIsMyself = this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchType === this.switchType
       && this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchIdentifier === this.switchIdentifier;
 

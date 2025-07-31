@@ -2,11 +2,8 @@ import { SwitchAccessory } from './SwitchAccessory.js';
 
 export class ShutoffSwitchAccessory extends SwitchAccessory {
 
-  protected triggerSwitchActions(): void {
-    this.log.info(`${this.switchType}: ${this.switchConfig.name} changed to ${this.switchState.isOn ? 'ON' : 'OFF'}.`);
-    if (!this.switchState.isOn) {
-      return;
-    }
+  protected triggerSwitchOnActions(): void {
+    this.log.info(`${this.switchType}: ${this.switchConfig.name} changed to ON.`);
     setTimeout(() => {
       this.log.info(`${this.switchType}: ${this.switchConfig.name} triggered. Cancelling unoccupy timer and turning off occupancy sensor.`);
       this.occupancySensorAccessory.cancelCurrentUnoccupancyTimer();
@@ -20,4 +17,9 @@ export class ShutoffSwitchAccessory extends SwitchAccessory {
       this.occupancySensorAccessory.setOccupancyStatus(false);
     }, this.MANUAL_STATUS_CHANGE_TIMEOUT);
   }
+
+  protected triggerSwitchOffActions(): void {
+    this.log.info(`${this.switchType}: ${this.switchConfig.name} changed to OFF.`);
+  }
+
 }

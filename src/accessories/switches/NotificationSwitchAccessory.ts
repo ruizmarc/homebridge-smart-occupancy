@@ -42,15 +42,15 @@ export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwi
     });
   }
 
-  protected triggerSwitchActions(): void {
-    if (!this.switchState.isOn) {
-      this.log.warn(`${this.switchType}: ${this.switchConfig.name} is OFF, no action taken`);
-      return;
-    }
+  protected triggerSwitchOnActions(): void {
     setTimeout(() => {
       this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false });
       this.log.info(`${this.switchType}: ${this.switchConfig.name} turned OFF, no action required`);
     }, this.MANUAL_STATUS_CHANGE_TIMEOUT);
+  }
+  
+  protected triggerSwitchOffActions(): void {
+    this.log.warn(`${this.switchType}: ${this.switchConfig.name} is OFF, no action taken`);
   }
 }
 
