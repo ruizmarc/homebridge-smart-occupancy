@@ -1,7 +1,7 @@
 import type { API, Characteristic, DynamicPlatformPlugin, Logging, PlatformAccessory, Service } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
-import { OccupancyPlatformConfig } from './types/config.js';
+import { OccupancyPlatformConfig } from './types/configs.js';
 import { OccupancySensorAccessory } from './accessories/OccupancySensorAccessory.js';
 import { StorageLayer } from './utils/StorageLayer.js';
 
@@ -62,7 +62,8 @@ export class SmartOccupancyHomebridgePlatform implements DynamicPlatformPlugin {
 
     for (const sensorConfig of (this.platformConfig.sensors ?? [])) {
 
-      const uuid = this.api.hap.uuid.generate(sensorConfig.identifier ?? sensorConfig.name);
+      sensorConfig.identifier ??= sensorConfig.name;
+      const uuid = this.api.hap.uuid.generate(sensorConfig.identifier);
 
       const alreadyRegisteredSensor = this.accessories.get(uuid);
 

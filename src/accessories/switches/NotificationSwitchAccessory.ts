@@ -1,6 +1,6 @@
 import { Logging } from 'homebridge';
 import { SmartOccupancyHomebridgePlatform } from '../../platform.js';
-import { NotificationSwitchConfig, OccupancySensorConfig } from '../../types/config.js';
+import { NotificationSwitchConfig, OccupancySensorConfig } from '../../types/configs.js';
 import { OccupancySensorAccessory } from '../OccupancySensorAccessory.js';
 import { SwitchAccessory } from './SwitchAccessory.js';
 import { map, take, takeUntil, timer } from 'rxjs';
@@ -23,20 +23,20 @@ export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwi
       if (timerDurationSeconds < this.switchConfig.minimumNotificationTime) {
         return;
       }
-      this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} will trigger after ${timerDurationSeconds} seconds`);
+      this.log.debug(`${this.switchType}: ${this.switchConfig.name} will trigger after ${timerDurationSeconds} seconds`);
       timer(timerDurationSeconds * 1000).pipe(
         takeUntil(
           this.occupancySensorAccessory.timerCancelled$
             .pipe(
               take(1),
               map((cancelledEvent) => {
-                this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} timer cancelled`);
+                this.log.debug(`${this.switchType}: ${this.switchConfig.name} timer cancelled`);
                 return cancelledEvent;
               }),
             ),
         ),
       ).subscribe(() => {
-        this.log.info(`${this.switchConfig.type}: ${this.switchConfig.name} triggered after ${timerDurationSeconds} seconds`);
+        this.log.info(`${this.switchType}: ${this.switchConfig.name} triggered after ${timerDurationSeconds} seconds`);
         this.setStatus(true);
       });
     });
@@ -44,12 +44,12 @@ export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwi
 
   protected triggerSwitchActions(): void {
     if (!this.switchState.isOn) {
-      this.log.warn(`${this.switchConfig.type}: ${this.switchConfig.name} is OFF, no action taken`);
+      this.log.warn(`${this.switchType}: ${this.switchConfig.name} is OFF, no action taken`);
       return;
     }
     setTimeout(() => {
       this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false });
-      this.log.info(`${this.switchConfig.type}: ${this.switchConfig.name} turned OFF, no action required`);
+      this.log.info(`${this.switchType}: ${this.switchConfig.name} turned OFF, no action required`);
     }, this.MANUAL_STATUS_CHANGE_TIMEOUT);
   }
 }

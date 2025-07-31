@@ -26,7 +26,7 @@
             "identifier": {
               "title": "Identifier",
               "type": "string",
-              "required": true,
+              "required": false,
               "description": "Unique identifier for the sensor. Leave empty to auto-generate. If you set a value, it must be unique across all sensors. If you do not set a value, identifier will change when name changes which might break automations."
             },
             "stayOccupiedDelay": {
@@ -91,6 +91,7 @@
             "switches": {
               "title": "Switches",
               "type": "array",
+              "description": "List of switches to control the occupancy sensor. Each switch can have a different type and configuration. These are the available switch types:<br /><ul><li>Presence Switch: It mimics the status of the occupancy sensor.</li><li>Occupancy Progress Notification Switch: It will toggle on and off after the occupancy delay reaches the configured time.</li><li>Occupancy Switch: It will activate the occupancy sensor, but delay won't start until it turns off.</li><li>Trigger Occupancy Switch: It will trigger the occupancy sensor and the delay.</li><li>Stay-on Switch: It will keep the occupancy sensor active while switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Stay-on Trigger Switch: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Shutoff Switch: It will turn off the occupancy sensor and stop the delay.</li></ul>",
               "items": {
                 "type": "object",
                 "properties": {
@@ -99,28 +100,22 @@
                     "type": "string",
                     "required": true
                   },
+                  "identifier": {
+                    "title": "Identifier",
+                    "type": "string",
+                    "required": false,
+                    "description": "Unique identifier for the switch. Leave empty to auto-generate. If you set a value, it must be unique across all switches. If you do not set a value, identifier will change when name changes which might break automations."
+                  },
                   "type": {
                     "title": "Switch Type",
                     "type": "string",
                     "required": true,
-                    "description": "Type of switch to use with this sensor.<br /><ul><li>Presence Switch: It will turn on/off occupation without activating the delay.</li><li>Occupancy Progress Notification Switch: It will toggle on and off after the occupancy delay reaches the configured time.</li><li>Occupancy Switch: It will activate the occupancy sensor, but delay won't start until it turns off.</li><li>Trigger Occupancy Switch: It will trigger the occupancy sensor and the delay.</li><li>Stay-on Switch: It will keep the occupancy sensor active while switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Stay-on Trigger Switch: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Shutoff Switch: It will turn off the occupancy sensor and stop the delay.</li></ul>",
+                    "description": "Type of switch to use with this sensor.",
                     "oneOf": [
-                      {
-                        "title": "Presence Switch",
-                        "enum": [
-                          "PRESENCE_SWITCH"
-                        ]
-                      },
                       {
                         "title": "Occupancy Switch",
                         "enum": [
                           "OCCUPANCY_SWITCH"
-                        ]
-                      },
-                      {
-                        "title": "Occupancy Progress Notification Switch",
-                        "enum": [
-                          "NOTIFICATION_SWITCH"
                         ]
                       },
                       {
@@ -148,9 +143,27 @@
                         ]
                       },
                       {
-                        "title": "Shutoff Switch",
+                        "title": "Presence Switch",
                         "enum": [
-                          "SHUTOFF_SWITCH"
+                          "PRESENCE_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Occupancy Progress Notification Switch",
+                        "enum": [
+                          "NOTIFICATION_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Master Switch",
+                        "enum": [
+                          "MASTER_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Shutoff Trigger Switch",
+                        "enum": [
+                          "SHUTOFF_TRIGGER_SWITCH"
                         ]
                       }
                     ],

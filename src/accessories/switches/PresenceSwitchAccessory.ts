@@ -1,6 +1,6 @@
 import { Logging } from 'homebridge';
 import { SmartOccupancyHomebridgePlatform } from '../../platform.js';
-import { OccupancySensorConfig, SwitchConfig } from '../../types/config.js';
+import { OccupancySensorConfig, SwitchConfig } from '../../types/configs.js';
 import { StorageLayer } from '../../utils/StorageLayer.js';
 import { OccupancySensorAccessory } from '../OccupancySensorAccessory.js';
 import { SwitchAccessory } from './SwitchAccessory.js';
@@ -23,7 +23,7 @@ export class PresenceSwitchAccessory extends SwitchAccessory {
         return;
       }
       this.setStatus(occupied, { updateCharacteristic: true, triggerSwitchActions: false });
-      this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} occupancy status changed: ${occupied}, updating switch state`);
+      this.log.debug(`${this.switchType}: ${this.switchConfig.name} occupancy status changed: ${occupied}, updating switch state`);
     });
   }
 
@@ -35,12 +35,12 @@ export class PresenceSwitchAccessory extends SwitchAccessory {
 
     const shouldGoOccupied = this.shouldGoOccupied();
     if (shouldGoOccupied) {
-      this.log.info(`${this.switchConfig.type}: ${this.switchConfig.name} turned ON, setting occupancy to ON`);
-      this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchConfig.type, switchIdentifier: this.switchIdentifier });
+      this.log.info(`${this.switchType}: ${this.switchConfig.name} turned ON, setting occupancy to ON`);
+      this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchType, switchIdentifier: this.switchIdentifier });
       return;
     }
 
-    const triggerSwitchIsMyself = this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchType === this.switchConfig.type
+    const triggerSwitchIsMyself = this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchType === this.switchType
       && this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchIdentifier === this.switchIdentifier;
 
     const shouldGoUnoccupied = !this.switchState.isOn
@@ -48,8 +48,8 @@ export class PresenceSwitchAccessory extends SwitchAccessory {
       && triggerSwitchIsMyself;
 
     if (shouldGoUnoccupied) {
-      this.log.info(`${this.switchConfig.type}: ${this.switchConfig.name} turned OFF, setting occupancy to OFF`);
-      this.occupancySensorAccessory.setOccupancyStatus(false, { switchType: this.switchConfig.type, switchIdentifier: this.switchIdentifier });
+      this.log.info(`${this.switchType}: ${this.switchConfig.name} turned OFF, setting occupancy to OFF`);
+      this.occupancySensorAccessory.setOccupancyStatus(false, { switchType: this.switchType, switchIdentifier: this.switchIdentifier });
       return;
     }
   }

@@ -21,6 +21,7 @@ export interface OccupancySensorConfig {
 export interface SwitchConfig {
     name: string;
     type: SwitchType;
+    identifier?: string;
 }
 
 export interface NotificationSwitchConfig extends SwitchConfig {
@@ -36,5 +37,6 @@ export enum SwitchType {
     TRIGGER_OCCUPANCY_SWITCH = 'TRIGGER_OCCUPANCY_SWITCH',
     STAY_ON_SWITCH = 'STAY_ON_SWITCH',
     TRIGGER_STAY_ON_SWITCH = 'TRIGGER_STAY_ON_SWITCH',
-    SHUTOFF_SWITCH = 'SHUTOFF_SWITCH',
+    MASTER_SWITCH = 'MASTER_SWITCH',
+    SHUTOFF_TRIGGER_SWITCH = 'SHUTOFF_TRIGGER_SWITCH',
 }

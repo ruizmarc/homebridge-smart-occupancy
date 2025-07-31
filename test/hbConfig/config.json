@@ -38,34 +38,46 @@
           "alwaysBootAsOccupied": false,
           "switches": [
             {
-              "name": "Desk light switch",
-              "type": "PRESENCE_SWITCH"
-            },
-            {
               "name": "Desk occupancy switch",
-              "type": "OCCUPANCY_SWITCH"
+              "type": "OCCUPANCY_SWITCH",
+              "identifier": "desk-occupancy-switch"
             },
             {
               "name": "Desk occupancy trigger switch",
-              "type": "TRIGGER_OCCUPANCY_SWITCH"
-            },
-            {
-              "name": "Desk shutoff switch",
-              "type": "SHUTOFF_SWITCH"
+              "type": "TRIGGER_OCCUPANCY_SWITCH",
+              "identifier": "desk-occupancy-trigger-switch"
             },
             {
               "name": "Desk stay on switch",
-              "type": "STAY_ON_SWITCH"
+              "type": "STAY_ON_SWITCH",
+              "identifier": "desk-stay-on-switch"
             },
             {
               "name": "Desk stay on trigger switch",
-              "type": "TRIGGER_STAY_ON_SWITCH"
+              "type": "TRIGGER_STAY_ON_SWITCH",
+              "identifier": "desk-stay-on-trigger-switch"
+            },
+            {
+              "name": "Desk light switch",
+              "type": "PRESENCE_SWITCH",
+              "identifier": "desk-light-switch"
             },
             {
               "name": "Desk occupancy notification switch",
               "type": "NOTIFICATION_SWITCH",
+              "identifier": "desk-occupancy-notification-switch",
               "notificationThreshold": 75,
               "minimumNotificationTime": 5
+            },
+            {
+              "name": "Desk master switch",
+              "type": "MASTER_SWITCH",
+              "identifier": "desk-master-switch"
+            },
+            {
+              "name": "Desk shutoff switch",
+              "type": "SHUTOFF_TRIGGER_SWITCH",
+              "identifier": "desk-shutoff-trigger-switch"
             }
           ]
         }

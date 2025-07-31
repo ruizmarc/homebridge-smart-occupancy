@@ -2,7 +2,7 @@ import type { CharacteristicValue, Logging, PlatformAccessory, Service } from 'h
 import { Observable, Subject, takeUntil, timer } from 'rxjs';
 
 import type { SmartOccupancyHomebridgePlatform } from '../platform.js';
-import { OccupancySensorConfig, SwitchType } from '../types/config.js';
+import { OccupancySensorConfig, SwitchType } from '../types/configs.js';
 import { SwitchAccessory } from './switches/SwitchAccessory.js';
 import { StorageLayer } from '../utils/StorageLayer.js';
 import { SwitchFactory } from './switches/SwitchFactory.js';
@@ -72,7 +72,7 @@ export class OccupancySensorAccessory {
     this.occupancySensorAccessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SmartOccupancy')
       .setCharacteristic(this.platform.Characteristic.Model, 'Occupancy Sensor')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, 'smart-occupancy-sensor');
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.occupancySensorConfig.identifier);
 
     this.occupancySensorService = this.occupancySensorAccessory.getService(this.platform.Service.OccupancySensor)
       ?? this.occupancySensorAccessory.addService(this.platform.Service.OccupancySensor);
