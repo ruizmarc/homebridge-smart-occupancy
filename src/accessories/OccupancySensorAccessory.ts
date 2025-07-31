@@ -1,4 +1,4 @@
-import type { CharacteristicValue, Logging, PlatformAccessory, Service } from 'homebridge';
+import { type CharacteristicValue, type Logging, type PlatformAccessory, type Service } from 'homebridge';
 import { Observable, Subject, takeUntil, timer } from 'rxjs';
 
 import type { SmartOccupancyHomebridgePlatform } from '../platform.js';
@@ -96,25 +96,41 @@ export class OccupancySensorAccessory {
       );
       this.switches.set(switchAccessory.switchIdentifier, switchAccessory);
     }
-    const currentSwitchIdentifiers = new Set(Array.from(this.switches.values())
-      .map((switchAccessory) => switchAccessory.switchService.UUID + switchAccessory.switchService.subtype));
+    const currentSwitchIdentifiersSet = new Set(Array.from(this.switches.values())
+      .map((switchAccessory) => switchAccessory.switchIdentifier));
 
     const currentRegisteredSwitchServicesMap = new Map<string, Service>();
-    const registeredSwitchServices = new Set(
+    const allSwitchTypesSet = new Set(Object.keys(SwitchType));
+    const registeredSwitchServicesIdentifiersSet = new Set(
       this.occupancySensorAccessory.services
-        .filter((service) => service.subtype?.endsWith('SWITCH'))
+        .filter((service) => {
+          return service.characteristics.some(characteristic => characteristic.displayName === 'Model'
+            && characteristic.value
+            && allSwitchTypesSet.has(characteristic.value?.toString()),
+          );
+        })
         .map(switchService => {
-          const switchIdentifier = switchService.UUID + switchService.subtype;
+          const switchIdentifier = switchService.characteristics.find(characteristic => characteristic.displayName === 'Serial Number')?.value?.toString();
+          if (!switchIdentifier) {
+            this.log.warn(`Switch service with UUID ${switchService.UUID} does not have a Serial Number characteristic, skipping.`);
+            return '';
+          }
           currentRegisteredSwitchServicesMap.set(switchIdentifier, switchService);
           return switchIdentifier;
         }));
 
-    for (const registeredSwitchService of registeredSwitchServices) {
-      if (!currentSwitchIdentifiers.has(registeredSwitchService)) {
-        this.log.warn(`Switch service with UUID ${registeredSwitchService} not found in registered services, removing it now.`);
+    for (const registeredSwitchService of registeredSwitchServicesIdentifiersSet) {
+      if (!currentSwitchIdentifiersSet.has(registeredSwitchService)) {
+        this.log.warn(`Switch service with identifier ${registeredSwitchService} not found in registered services, removing it now.`);
         const serviceToRemove = currentRegisteredSwitchServicesMap.get(registeredSwitchService);
-        if (serviceToRemove) {
-          this.occupancySensorAccessory.removeService(serviceToRemove);
+        if (!serviceToRemove) {
+          continue;
+        }
+        this.occupancySensorAccessory.removeService(serviceToRemove);
+        if (this.occupancySensorConfig.persistStatusAcrossReboots && this.storage) {
+          this.storage.removeItem(registeredSwitchService).catch((error) => {
+            this.log.error(`Failed to remove persisted state for switch ${registeredSwitchService}:`, error);
+          });
         }
       }
     }

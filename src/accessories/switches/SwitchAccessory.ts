@@ -38,7 +38,7 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
   ) {
 
     this.switchType = switchConfig.type;
-    this.switchIdentifier = switchConfig.identifier ? `${switchConfig.identifier}-${this.switchType}` : `${switchConfig.name}-${this.switchType}`;
+    this.switchIdentifier = switchConfig.identifier ?? `${this.switchType}.${switchConfig.name}`;
 
     this.switchService = this.occupancySensorAccessory.occupancySensorAccessory.getService(this.switchIdentifier)
       ?? this.occupancySensorAccessory.occupancySensorAccessory.addService(this.platform.Service.Switch, switchConfig.name, this.switchIdentifier);
