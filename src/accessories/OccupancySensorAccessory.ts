@@ -24,6 +24,9 @@ export class OccupancySensorAccessory {
 
   private log: Logging;
 
+  private occupancyStatusSubject = new Subject<boolean>();
+  public occupancyStatus$ = this.occupancyStatusSubject.asObservable();
+
   private timerStartedSubject = new Subject<boolean>();
   public timerStarted$ = this.timerStartedSubject.asObservable();
 
@@ -187,6 +190,7 @@ export class OccupancySensorAccessory {
     if (options.updateAccessoryService) {
       this.occupancySensorService.updateCharacteristic(this.platform.Characteristic.OccupancyDetected, this.getOccupancyStatusCharacteristicValue());
     }
+    this.occupancyStatusSubject.next(occupied);
   }
 
   public startUnoccupyTimer() {
