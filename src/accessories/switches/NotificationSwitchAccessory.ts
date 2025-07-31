@@ -4,6 +4,7 @@ import { NotificationSwitchConfig, OccupancySensorConfig } from '../../types/con
 import { OccupancySensorAccessory } from '../OccupancySensorAccessory.js';
 import { SwitchAccessory } from './SwitchAccessory.js';
 import { map, take, takeUntil, timer } from 'rxjs';
+import { StorageLayer } from '../../utils/StorageLayer.js';
 
 export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwitchConfig> {
 
@@ -12,10 +13,10 @@ export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwi
     occupancySensorAccessory: OccupancySensorAccessory,
     switchConfig: NotificationSwitchConfig,
     sensorConfig: OccupancySensorConfig,
-    persistPath: string,
     log: Logging,
+    storage?: StorageLayer,
   ) {
-    super(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
+    super(platform, occupancySensorAccessory, switchConfig, sensorConfig, log, storage);
 
     this.occupancySensorAccessory.timerStarted$.subscribe(() => {
       const timerDurationSeconds = this.occupancySensorAccessory.occupancySensorState.nextDelaySeconds * (this.switchConfig.notificationThreshold / 100);

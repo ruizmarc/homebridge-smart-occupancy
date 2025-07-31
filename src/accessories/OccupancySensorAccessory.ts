@@ -20,8 +20,6 @@ export class OccupancySensorAccessory {
 
   public occupancySensorState: OccupancySensorState;
 
-  private storage: StorageLayer;
-
   public switches: Map<string, SwitchAccessory> = new Map();
 
   private log: Logging;
@@ -41,9 +39,8 @@ export class OccupancySensorAccessory {
     private readonly platform: SmartOccupancyHomebridgePlatform,
     private readonly occupancySensorConfig: OccupancySensorConfig,
     public readonly occupancySensorAccessory: PlatformAccessory,
-    private readonly persistPath: string,
+    private readonly storage?: StorageLayer,
   ) {
-    this.storage = new StorageLayer(this.persistPath);
     this.log = platform.log;
 
     this.occupancySensorState = {
@@ -57,9 +54,15 @@ export class OccupancySensorAccessory {
     this.initAccessoryInformation();
     this.initSwitches();
 
-    this.initSensorStatus().catch((error) => {
-      this.log.error(`Failed to initialize occupancy sensor status for ${occupancySensorConfig.name}:`, error);
-    });
+    this.initSensorState()
+      .then(() => {
+        this.initSwitchesState().catch((error) => {
+          this.log.error(`Failed to initialize switch states for ${occupancySensorConfig.name}:`, error);
+        });
+      })
+      .catch((error) => {
+        this.log.error(`Failed to initialize occupancy sensor status for ${occupancySensorConfig.name}:`, error);
+      });
   }
 
   private initAccessoryInformation() {
@@ -85,8 +88,8 @@ export class OccupancySensorAccessory {
         this,
         switchConfig,
         this.occupancySensorConfig,
-        this.persistPath,
         this.platform.log,
+        this.storage,
       );
       this.switches.set(switchAccessory.switchIdentifier, switchAccessory);
     }
@@ -114,23 +117,29 @@ export class OccupancySensorAccessory {
     }
   }
 
-  private async initSensorStatus() {
-    if (this.occupancySensorConfig.persistStatusAcrossReboots) {
-      await this.storage.init();
+  private async initSensorState() {
+    if (this.occupancySensorConfig.persistStatusAcrossReboots && this.storage) {
       const persistedState = await this.storage.getItem<OccupancySensorState>(this.occupancySensorAccessory.UUID);
       if (!persistedState) {
         this.log.warn(`No persisted state found for switch ${this.occupancySensorConfig.name}, initializing to OFF`);
         this.setOccupancyStatus(false);
         return;
       }
+      this.occupancySensorState = persistedState;
+      this.occupancySensorService.updateCharacteristic(this.platform.Characteristic.OccupancyDetected, this.getOccupancyStatusCharacteristicValue());
       this.log.info(`Occupancy sensor ${this.occupancySensorConfig.name} restored state: ${this.occupancySensorState.occupied}`);
-      this.setOccupancyStatus(persistedState.occupied);
       return;
     }
     if (this.occupancySensorConfig.alwaysBootAsOccupied) {
       this.log.info(`Occupancy sensor ${this.occupancySensorConfig.name} initialized as ON`);
       this.setOccupancyStatus(true);
       return;
+    }
+  }
+
+  private async initSwitchesState() {
+    for (const switchAccessory of this.switches.values()) {
+      await switchAccessory.initSwitchState();
     }
   }
 
@@ -170,7 +179,7 @@ export class OccupancySensorAccessory {
       this.occupancySensorState.triggeredBySwitchType = undefined;
       this.occupancySensorState.triggeredBySwitchIdentifier = undefined;
     }
-    if (this.occupancySensorConfig.persistStatusAcrossReboots) {
+    if (this.occupancySensorConfig.persistStatusAcrossReboots && this.storage) {
       this.storage.setItem(this.occupancySensorAccessory.UUID, this.occupancySensorState).catch((error) => {
         this.log.error(`Failed to persist occupancy sensor state for ${this.occupancySensorConfig.name}:`, error);
       });
@@ -211,7 +220,7 @@ export class OccupancySensorAccessory {
     this.occupancySensorState.triggeredBySwitchIdentifier = switchIdentifier;
     this.occupancySensorState.triggeredBySwitchType = switchType;
     this.occupancySensorState.lastTriggeredAt = new Date().toISOString();
-    if (this.occupancySensorConfig.persistStatusAcrossReboots) {
+    if (this.occupancySensorConfig.persistStatusAcrossReboots && this.storage) {
       this.storage.setItem(this.occupancySensorAccessory.UUID, this.occupancySensorState).catch((error) => {
         this.log.error(`Failed to persist occupancy sensor state for ${this.occupancySensorConfig.name}:`, error);
       });

@@ -3,6 +3,7 @@ import type { API, Characteristic, DynamicPlatformPlugin, Logging, PlatformAcces
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import { OccupancyPlatformConfig } from './types/config.js';
 import { OccupancySensorAccessory } from './accessories/OccupancySensorAccessory.js';
+import { StorageLayer } from './utils/StorageLayer.js';
 
 /**
  * HomebridgePlatform
@@ -55,7 +56,7 @@ export class SmartOccupancyHomebridgePlatform implements DynamicPlatformPlugin {
     this.accessories.set(accessory.UUID, accessory);
   }
 
-  discoverDevices() {
+  async discoverDevices() {
 
     this.log.info('Platform config:', JSON.stringify(this.platformConfig));
 
@@ -65,7 +66,11 @@ export class SmartOccupancyHomebridgePlatform implements DynamicPlatformPlugin {
 
       const alreadyRegisteredSensor = this.accessories.get(uuid);
 
-      const persistPath = this.api.user.persistPath();
+      let storageLayer: StorageLayer | undefined;
+      if (sensorConfig.persistStatusAcrossReboots) {
+        const persistPath = this.api.user.persistPath();
+        storageLayer = await StorageLayer.getInstance(persistPath);
+      }
 
       if (alreadyRegisteredSensor) {
         this.log.info('Restoring existing accessory from cache:', alreadyRegisteredSensor.displayName);
@@ -73,7 +78,7 @@ export class SmartOccupancyHomebridgePlatform implements DynamicPlatformPlugin {
           this,
           sensorConfig,
           alreadyRegisteredSensor,
-          persistPath,
+          storageLayer,
         );
       } else {
         this.log.info('Adding new accessory:', sensorConfig.name);
@@ -82,7 +87,7 @@ export class SmartOccupancyHomebridgePlatform implements DynamicPlatformPlugin {
           this,
           sensorConfig,
           accessory,
-          persistPath,
+          storageLayer,
         );
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }

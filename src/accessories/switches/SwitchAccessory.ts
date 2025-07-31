@@ -18,8 +18,6 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
 
   public switchService: Service;
 
-  protected storage: StorageLayer;
-
   protected readonly MANUAL_STATUS_CHANGE_TIMEOUT = 1000; // 1 second
 
   public switchState: SwitchState = {
@@ -33,11 +31,9 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
     protected readonly occupancySensorAccessory: OccupancySensorAccessory,
     protected readonly switchConfig: CONFIG,
     protected readonly sensorConfig: OccupancySensorConfig,
-    protected readonly persistPath: string,
     protected readonly log: Logging,
+    protected readonly storage?: StorageLayer,
   ) {
-
-    this.storage = new StorageLayer(this.persistPath);
 
     this.switchIdentifier = `${switchConfig.name}-${switchConfig.type}`;
 
@@ -49,31 +45,33 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
     this.switchService.getCharacteristic(this.platform.Characteristic.On)
       .onGet(this.handleOnGet.bind(this))
       .onSet(this.handleOnSet.bind(this));
-
-    this.initStatus().catch((error) => {
-      this.log.error(`Failed to initialize switch status for ${switchConfig.name}:`, error);
-    });
-
   }
 
-  protected async initStatus() {
-    if (this.sensorConfig.persistStatusAcrossReboots) {
-      await this.storage.init();
-      const persistedState = await this.storage.getItem<SwitchState>(this.switchIdentifier);
-      if (!persistedState) {
-        this.log.warn(`${this.switchConfig.type}: No persisted state found for switch ${this.switchConfig.name}, initializing to OFF`);
-        this.setStatus(false);
-        return;
+  public async initSwitchState() {
+    if (!this.sensorConfig.persistStatusAcrossReboots || !this.storage) {
+      this.switchService.updateCharacteristic(this.platform.Characteristic.On, this.getStatusCharacteristic());
+      this.log.debug(`${this.switchConfig.type}: Switch ${this.switchConfig.name} initialized without persisted state.`);
+      return;
+    }
+    const persistedState = await this.storage.getItem<SwitchState>(this.switchIdentifier);
+    if (!persistedState) {
+      this.log.warn(`${this.switchConfig.type}: No persisted state found for switch ${this.switchConfig.name}, initializing to OFF`);
+      this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false });
+      return;
+    }
+    this.log.info(`${this.switchConfig.type}: Switch ${this.switchConfig.name} initialized with persisted state:`, persistedState);
+    if (this.occupancySensorAccessory.occupancySensorState.occupied 
+      && this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchType === this.switchConfig.type
+      && this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchIdentifier === this.switchIdentifier) {
+      if (this.switchConfig.type === SwitchType.TRIGGER_OCCUPANCY_SWITCH || this.switchConfig.type === SwitchType.TRIGGER_STAY_ON_SWITCH) {
+        this.setStatus(true, { updateCharacteristic: true, triggerSwitchActions: true });
+      } else {
+        this.setStatus(persistedState.isOn, { updateCharacteristic: true, triggerSwitchActions: true });
       }
-      this.log.info(`${this.switchConfig.type}: Switch ${this.switchConfig.name} initialized with persisted state:`, persistedState);
-      this.setStatus(persistedState.isOn);
       return;
     }
-    if (this.sensorConfig.alwaysBootAsOccupied) {
-      this.log.info(`${this.switchConfig.type}: Switch ${this.switchConfig.name} initialized as ON`);
-      this.setStatus(true);
-      return;
-    }
+    this.setStatus(persistedState.isOn, { updateCharacteristic: true, triggerSwitchActions: false });
+    return;
   }
 
   handleOnGet(): CharacteristicValue {
@@ -93,7 +91,7 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
   public setStatus(value: boolean, options: SetSwitchStatusOptions = { updateCharacteristic: true, triggerSwitchActions: true }) {
     this.log.debug(`${this.switchConfig.type}: ${this.switchConfig.name} Setting switch status to -> `, value);
     this.switchState.isOn = value;
-    if (this.sensorConfig.persistStatusAcrossReboots) {
+    if (this.sensorConfig.persistStatusAcrossReboots && this.storage) {
       this.storage.setItem(this.switchIdentifier, this.switchState).catch((error) => {
         this.log.error(`Failed to persist switch state for ${this.switchConfig.name}:`, error);
       });

@@ -34,7 +34,7 @@
           "progressiveDelay": true,
           "progressionStart": 5,
           "progressionStep": 5,
-          "persistStatusAcrossReboots": false,
+          "persistStatusAcrossReboots": true,
           "alwaysBootAsOccupied": false,
           "switches": [
             {

@@ -3,11 +3,23 @@ import storage, { LocalStorage } from 'node-persist';
 export class StorageLayer {
   private storage!: LocalStorage;
 
-  constructor(private persistPath: string) { }
+  private static instance: StorageLayer | null = null;
 
-  async init() {
+  public static async getInstance(persistPath: string): Promise<StorageLayer> {
+    if (StorageLayer.instance) {
+      return StorageLayer.instance;
+    }
+    const storageLayer = new StorageLayer(persistPath);
+    await storageLayer.init();
+    return storageLayer;
+  }
+
+  private constructor(private persistPath: string) { }
+
+  private async init() {
     this.storage = await storage.create({
       dir: this.persistPath,
+      forgiveParseErrors: true,
       logging: true,
     });
     await this.storage.init();

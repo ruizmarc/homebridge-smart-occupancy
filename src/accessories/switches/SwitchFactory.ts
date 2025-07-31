@@ -10,6 +10,7 @@ import { TriggerOccupancySwitchAccessory } from './TriggerOccupancySwitchAccesso
 import { TriggerStayOnSwitchAccessory } from './TriggerStayOnSwitchAccessory.js';
 import { SmartOccupancyHomebridgePlatform } from '../../platform.js';
 import { OccupancySensorAccessory } from '../OccupancySensorAccessory.js';
+import { StorageLayer } from '../../utils/StorageLayer.js';
 
 export class SwitchFactory {
 
@@ -18,24 +19,24 @@ export class SwitchFactory {
     occupancySensorAccessory: OccupancySensorAccessory,
     switchConfig: SwitchConfig,
     sensorConfig: OccupancySensorConfig,
-    persistPath: string,
     log: Logging,
+    storage?: StorageLayer,
   ): SwitchAccessory {
     switch (switchConfig.type) {
     case SwitchType.PRESENCE_SWITCH:
-      return new PresenceSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
+      return new PresenceSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, log, storage);
     case SwitchType.NOTIFICATION_SWITCH:
-      return new NotificationSwitchAccessory(platform, occupancySensorAccessory, switchConfig as NotificationSwitchConfig, sensorConfig, persistPath, log);
+      return new NotificationSwitchAccessory(platform, occupancySensorAccessory, switchConfig as NotificationSwitchConfig, sensorConfig, log, storage);
     case SwitchType.OCCUPANCY_SWITCH:
-      return new OccupancySwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
+      return new OccupancySwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, log, storage);
     case SwitchType.TRIGGER_OCCUPANCY_SWITCH:
-      return new TriggerOccupancySwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
+      return new TriggerOccupancySwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, log, storage);
     case SwitchType.STAY_ON_SWITCH:
-      return new StayOnSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
+      return new StayOnSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, log, storage);
     case SwitchType.TRIGGER_STAY_ON_SWITCH:
-      return new TriggerStayOnSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
+      return new TriggerStayOnSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, log, storage);
     case SwitchType.SHUTOFF_SWITCH:
-      return new ShutoffSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, persistPath, log);
+      return new ShutoffSwitchAccessory(platform, occupancySensorAccessory, switchConfig, sensorConfig, log, storage);
     default:
       throw new Error(`Unknown switch type: ${switchConfig.type}`);
     }
