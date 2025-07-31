@@ -91,7 +91,7 @@
             "switches": {
               "title": "Switches",
               "type": "array",
-              "description": "List of switches to control the occupancy sensor. Each switch can have a different type and configuration. These are the available switch types:<br /><ul><li>Presence Switch: It mimics the status of the occupancy sensor.</li><li>Occupancy Progress Notification Switch: It will toggle on and off after the occupancy delay reaches the configured time.</li><li>Occupancy Switch: It will activate the occupancy sensor, but delay won't start until it turns off.</li><li>Trigger Occupancy Switch: It will trigger the occupancy sensor and the delay.</li><li>Stay-on Switch: It will keep the occupancy sensor active while switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Stay-on Trigger Switch: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Shutoff Switch: It will turn off the occupancy sensor and stop the delay.</li></ul>",
+              "description": "List of switches to control the occupancy sensor. Each switch can have a different type and configuration. These are the available switch types:<br /><ul><li>Occupancy Switch: It will activate the occupancy sensor, but delay won't start until it turns off.</li><li>Trigger Occupancy Switch: It will trigger the occupancy sensor and the delay.</li><li>Stay-on Switch: It will keep the occupancy sensor active while switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Stay-on Trigger Switch: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.</li><li>Presence Switch: It mimics the status of the occupancy sensor. If activated before occupancy is on, it will turn on the occupancy sensor and keep it active until it is turned off.</li><li>Occupancy Progress Notification Switch: It will toggle on and off after the occupancy delay reaches the configured time.</li><li>Master Switch: It will turn on/off occupancy sensor by stopping any action by any other trigger.</li><li>Shutoff Switch: It will turn off the occupancy sensor and stop the delay.</li></ul>",
               "items": {
                 "type": "object",
                 "properties": {
@@ -186,7 +186,7 @@
                     "default": 5,
                     "minimum": 0,
                     "maximum": 3600,
-                    "description": "Minimum number of seconds required to trigger a notification regardless of the notification threshold.",
+                    "description": "Minimum number of seconds required to trigger a notification regardless of the notification threshold. If the delay after applying the threshold is less than this time, the notification will not be triggered.",
                     "condition": {
                       "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
                     }

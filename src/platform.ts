@@ -58,7 +58,7 @@ export class SmartOccupancyHomebridgePlatform implements DynamicPlatformPlugin {
 
   async discoverDevices() {
 
-    this.log.info('Platform config:', JSON.stringify(this.platformConfig));
+    this.log.debug('Platform config:', JSON.stringify(this.platformConfig));
 
     for (const sensorConfig of (this.platformConfig.sensors ?? [])) {
 

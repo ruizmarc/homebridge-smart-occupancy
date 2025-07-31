@@ -1,215 +1,191 @@
 <p align="center">
-
-<img src="https://github.com/homebridge/branding/raw/latest/logos/homebridge-wordmark-logo-vertical.png" width="150">
-
+   <a href="https://github.com/ruizmarc/homebridge-smart-occupancy"><img alt="Smart Occupancy Homebridge" src="https://github.com/ruizmarc/homebridge-smart-occupancy/assets/5717082/267ea081-2be2-4712-bb89-48d750124f3f" width="600px"></a>
 </p>
 
 <span align="center">
 
-# Homebridge Platform Plugin Template
+# Smart Occupancy Homebridge
+
+<!-- [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins) -->
+[![npm](https://img.shields.io/npm/dt/homebridge-smart-occupancy
+)](https://www.npmjs.com/package/homebridge-smart-occupancy)
+[![npm](https://img.shields.io/npm/v/homebridge-smart-occupancy
+)](https://www.npmjs.com/package/homebridge-smart-occupancy)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/ruizmarc/homebridge-smart-occupancy)](https://github.com/ruizmarc/homebridge-smart-occupancy/pulls)
+[![GitHub issues](https://img.shields.io/github/issues/ruizmarc/homebridge-smart-occupancy)](https://github.com/ruizmarc/homebridge-smart-occupancy/issues)
+
+Create flexible and customizable occupancy sensors for Homebridge with extra switches and triggers to control sensor and occupancy delay behavior.
 
 </span>
 
-> [!IMPORTANT]
-> **Homebridge v2.0 Information**
->
-> This template currently has a
-> - `package.json -> engines.homebridge` value of `"^1.8.0 || ^2.0.0-beta.0"`
-> - `package.json -> devDependencies.homebridge` value of `"^2.0.0-beta.0"`
->
-> This is to ensure that your plugin will build and run on both Homebridge v1 and v2.
->
-> Once Homebridge v2.0 has been released, you can remove the `-beta.0` in both places.
+### Plugin summary
 
----
+This plugin allows you to create flexible and customizable occupancy sensors for Homebridge. It supports multiple sensors, each with its own configuration, and provides additional switches and triggers to control sensor behavior and occupancy delay.
 
-This is a template Homebridge dynamic platform plugin and can be used as a base to help you get started developing your own plugin.
+* Add as many occupancy sensors as you need.
+* Each sensor can have its own independent configuration.
+* Occupancy can have a delay before turning off.
+* Supports two occupancy delay modes:
+  * Fixed: The sensor will remain occupied for a fixed amount of time after the last detected motion.
+  * Progressive: The sensor will adjust the occupancy delay based on the last detected motion.
+* Allow a timeout for occupancy to be activated again, useful for preventing rapid re-triggering such as motion sensors detectiong motion when turning off a light.
+* Supports multiple occupancy triggers by using switches to trigger occupancy events and control the occupancy delay.
+* All sensor and switches state can be restored after bridge restart.
 
-This template should be used in conjunction with the [developer documentation](https://developers.homebridge.io/). A full list of all supported service types, and their characteristics is available on this site.
+### Use cases
 
-### Clone As Template
+This plugin is designed to create flexible occupancy sensors that can be used in as many scenarios as possible, but the essential idea behind it is to provide a way to control occupancy sensors as you would expect them to behave in a real-world scenario, for example, when turning on/off lights based on occupancy. If lights are turned on by a motion sensor you would want them to turn off when motion stops. However, if you turned on the lights manually, they should stop whenever you want them to stop, not when the motion sensor detects no motion. This is just a simple example about how this plugin can be used, but there are many other use cases.
 
-Click the link below to create a new GitHub Repository using this template, or click the *Use This Template* button above.
+Another useful situation in which this plugin can help you is to control occupancy sensors in areas with changing activity duration, so you would like the delay to adapt to such activity. If the motion detection is very frequent, the delay to turn off occupancy should be longer; otherwise, if the motion detection is less frequent, the delay can be shorter.
 
-<span align="center">
+We can find other less common use cases, if you have a hallway light that you want to turn on when the garage opens and keep on then as long as you have motion anywhere in the house. However you wouldn't want motion in the house to normally turn the light on. Using a combination of occupancy switch and stay-on switch you would be able to achieve this.
 
-### [Create New Repository From Template](https://github.com/homebridge/homebridge-plugin-template/generate)
+And if you like to bring your interaction with your surroundings to the next level, you could use this plugin to notify you when the occupancy delay is approaching to the end, so you can know when the lights are about to turn off, for example, by using a notification switch that dims the lights when the occupancy delay is about to end to let you know that the lights are about to turn off so you can take action if you want to keep them on.
 
-</span>
+The combinations are endless, and you will find a way to fit your own scenarios. The plugin might sound quite complex when you first look at it, but that's also what makes it powerful and you will find that it is easy to use when you start experimenting with it.
 
-### Setup Development Environment
+### Switch Types description
 
-To develop Homebridge plugins you must have Node.js 18 or later installed, and a modern code editor such as [VS Code](https://code.visualstudio.com/). This plugin template uses [TypeScript](https://www.typescriptlang.org/) to make development easier and comes with pre-configured settings for [VS Code](https://code.visualstudio.com/) and ESLint. If you are using VS Code install these extensions:
+* **Occupancy Switch**: It will activate the occupancy sensor, but delay won't start until it turns off.
+* **Trigger Occupancy Switch**: It will trigger the occupancy sensor and it will automatically start the delay.
+* **Stay-on Switch**: It will keep the occupancy sensor active while switch is on if occupancy is already on, otherwise it will do nothing.
+* **Stay-on Trigger Switch**: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.
+* **Presence Switch**: It mimics the status of the occupancy sensor. If activated before occupancy is on, it will turn on the occupancy sensor and keep it active until it is turned off by turning off the presence switch.
+* **Occupancy Progress Notification Switch**: It will toggle on and off after the occupancy delay reaches the configured time. Useful to notify other automations the occupancy delay is progress.
+* **Master Switch**: It will turn on/off occupancy sensor by stopping any action by any other trigger.
+* **Shutoff Switch**: It will turn off the occupancy sensor and stop the delay.
 
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+In case multiple switches are configured, there is a priority order to determine which switch will take precedence over the others. The order is as follows:
+1. **Master Switch** and **Shutoff Switch**: If a any of them are used, they will take precedence over all other switches.
+2. **Occupancy Switch** and **Stay on Switch**: If any of the two are on, no other switch will be able to turn off the occupancy sensor except for themselves and the Master Switch or Shutoff Switch, not even those triggering a delay as delay will not get activated.
+3. **Presence Switch**: Presence switch will always do what the occupancy sensor is doing, so it will not take precedence over any other switch, except in case the occupancy sensor is off and the presence switch is turned on, in this case, it will turn on the occupancy sensor and keep it active until it is turned off as the highest priority switch except for the Master Switch or Shutoff Switch.
+4. **Trigger Occupancy Switch** and **Trigger Stay on Switch**: If any of the two are triggered, they will start the delay to turn off the occupancy sensor however, if any other switch triggering a delay activates the delay, for example turning off the `Occupancy Switch`, the current delay count will be cancelled and a new delay will start from the beginning.
+5. **Occupancy Progress Notification Switch**: As it is only a signal, it does not affect the rest of switches.
 
-### Install Development Dependencies
+### HomeKit Automations
 
-Using a terminal, navigate to the project folder and run this command to install the development dependencies:
+Here are some examples of HomeKit automations you can create with this plugin:
 
-```shell
-npm install
-```
+* When Hallway Lights turn on -> Turn on Hallway Presence Switch
+* When Hallway Lights turn off -> Turn off Hallway Presence Switch
+* When Hallway Occupancy Sensor Detects Occupancy -> Turn on Hallway Light
+* When Hallway Occupancy Sensor Stops Detecting Occupancy -> Turn off Hallway Light
+* When Hallway Motion Sensor Detects Motion -> Turn on Hallway Occupancy Switch
+* When Hallway Motion Sensor Stops Detecting Motion -> Turn off Hallway Occupancy Switch
+* When Hallway Notification Ending Occupancy Switch toggles on -> Dim Hallway Lights to 50%
 
-### Update package.json
+Now, when the Hallway Lights are manually turned on or off, they stay on until the switch is manually turned back off. When the Hallway Lights are turned on by the motion sensor, they automatically turn off `stayOccupiedDelay` after motion stops but before the occupancy delay elapses, when the occupancy sensor delay reaches `notificationThreshold` it will toggle the notification switch on and off to notify you that the occupancy delay is about to end, and the lights will dim to 50% to let you know that they are about to turn off.
 
-Open the [`package.json`](./package.json) and change the following attributes:
+Additional Advanced HomeKit Automations
 
-- `name` - this should be prefixed with `homebridge-` or `@username/homebridge-`, is case-sensitive, and contains no spaces nor special characters apart from a dash `-`
-- `displayName` - this is the "nice" name displayed in the Homebridge UI
-- `homepage` - link to your GitHub repo's `README.md`
-- `repository.url` - link to your GitHub repo
-- `bugs.url` - link to your GitHub repo issues page
+* When Garage Door Is Opened -> Turn on Hallway Occupancy Trigger Switch
+* When Kitchen Motion Sensor Detects Motion -> Turn on Hallway Stay-on Trigger Switch
+* When Dining Room Lights Turn on -> Turn on Hallway Stay-on Switch
+* When Dining Room Lights Turn off -> Turn off Hallway Stay-on Switch
 
-When you are ready to publish the plugin you should set `private` to false, or remove the attribute entirely.
+These automations add the fancy elements of turning on the hallway lights when the garage opens, keeping the hallway lights on for longer if they're already on and the kitchen lights turn on, and keeping the hallway lights on as long as the dining room lights are on (if the hallway lights are already on).
 
-### Update Plugin Defaults
+### Configuration
 
-Open the [`src/settings.ts`](./src/settings.ts) file and change the default values:
+* Run this plugin as a [Child Bridge](https://github.com/homebridge/homebridge/wiki/Child-Bridges) (Highly Recommended), this prevent crash Homebridge if plugin crashes.
+* Install and use [Homebridge Config UI X](https://github.com/oznu/homebridge-config-ui-x/wiki) to configure this plugin (Highly Recommended).
+* Be sure to always make a backup copy of your config.json file before making any changes to it. 
 
-- `PLATFORM_NAME` - Set this to be the name of your platform. This is the name of the platform that users will use to register the plugin in the Homebridge `config.json`.
-- `PLUGIN_NAME` - Set this to be the same name you set in the [`package.json`](./package.json) file.
+<details>
+  <summary>JSON Configuration example</summary>
 
-Open the [`config.schema.json`](./config.schema.json) file and change the following attribute:
-
-- `pluginAlias` - set this to match the `PLATFORM_NAME` you defined in the previous step.
-
-See the [Homebridge API docs](https://developers.homebridge.io/#/config-schema#default-values) for more details on the other attributes you can set in the `config.schema.json` file.
-
-### Build Plugin
-
-TypeScript needs to be compiled into JavaScript before it can run. The following command will compile the contents of your [`src`](./src) directory and put the resulting code into the `dist` folder.
-
-```shell
-npm run build
-```
-
-### Link To Homebridge
-
-Run this command so your global installation of Homebridge can discover the plugin in your development environment:
-
-```shell
-npm link
-```
-
-You can now start Homebridge, use the `-D` flag, so you can see debug log messages in your plugin:
-
-```shell
-homebridge -D
-```
-
-### Watch For Changes and Build Automatically
-
-If you want to have your code compile automatically as you make changes, and restart Homebridge automatically between changes, you first need to add your plugin as a platform in `./test/hbConfig/config.json`:
-```
+  ``` json
 {
-...
-    "platforms": [
+  "name": "homebridge-smart-occupancy",
+  "platform": "SmartOccupancy",
+  "sensors": [
+    {
+      "name": "Desk sensor",
+      "identifier": "desk-sensor",
+      "stayOccupiedDelay": 30,
+      "newOccupancyTimeout": 0,
+      "progressiveDelay": true,
+      "progressionStart": 5,
+      "progressionStep": 5,
+      "persistStatusAcrossReboots": true,
+      "alwaysBootAsOccupied": false,
+      "switches": [
         {
-            "name": "Config",
-            "port": 8581,
-            "platform": "config"
+          "name": "Desk occupancy switch",
+          "type": "OCCUPANCY_SWITCH",
+          "identifier": "desk-occupancy-switch"
         },
         {
-            "name": "<PLUGIN_NAME>",
-            //... any other options, as listed in config.schema.json ...
-            "platform": "<PLATFORM_NAME>"
+          "name": "Desk occupancy trigger switch",
+          "type": "TRIGGER_OCCUPANCY_SWITCH",
+          "identifier": "desk-occupancy-trigger-switch"
+        },
+        {
+          "name": "Desk stay on switch",
+          "type": "STAY_ON_SWITCH",
+          "identifier": "desk-stay-on-switch"
+        },
+        {
+          "name": "Desk stay on trigger switch",
+          "type": "TRIGGER_STAY_ON_SWITCH",
+          "identifier": "desk-stay-on-trigger-switch"
+        },
+        {
+          "name": "Desk light switch",
+          "type": "PRESENCE_SWITCH",
+          "identifier": "desk-light-switch"
+        },
+        {
+          "name": "Desk occupancy notification switch",
+          "type": "NOTIFICATION_SWITCH",
+          "identifier": "desk-occupancy-notification-switch",
+          "notificationThreshold": 75,
+          "minimumNotificationTime": 5
+        },
+        {
+          "name": "Desk master switch",
+          "type": "MASTER_SWITCH",
+          "identifier": "desk-master-switch"
+        },
+        {
+          "name": "Desk shutoff switch",
+          "type": "SHUTOFF_TRIGGER_SWITCH",
+          "identifier": "desk-shutoff-trigger-switch"
         }
-    ]
+      ]
+    }
+  ]
 }
 ```
+</details>
 
-and then you can run:
+#### Sensor configuration
+| Name | Key | Description                                                                                                                                      | 
+| ---- | --- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Sensor Name | `name`  | Name for the sensor |
+| Identifier | `identifier` | Unique identifier for the sensor. Leave empty to auto-generate. If you set a value, it must be unique across all sensors. If you do not set a value, identifier will change when name changes which might break automations |
+| Stay Occupied Delay | `stayOccupiedDelay` | Maximum time in seconds before the sensor turns off automatically. Set 0 to shutoff as soon as not occupied. |
+| New Occupancy Timeout | `newOccupancyTimeout` | Time in seconds to wait before being able to trigger a new occupancy event after the latest one. The first one will trigger immediately. |
+| Progressive Delay | `progressiveDelay`  | Enable progressive delay to increase the delay duration with each delay activation until it reaches your delay config. This is useful when motion sensors are used in areas with frequent activity, allowing the delay to adapt to usage, for example if they are entering or leaving the covered area by the sensor frequently so that you want to avoid unnecessary on/off triggers.<br />When enabled, the delay will start at the configured `progressionStart` value and increase by `progressionStep` seconds each time the delay is cancelled by another activation until it reaches the configured `delay` value. |
+| Progressive Delay Start | `progressionStart`  | Initial delay value in seconds for the progressive delay. |
+| Progressive Delay Step | `progressionStep` | Step in seconds to increase the delay duration when progressive delay is enabled. |
+| Persist Status Across Reboots | `persistStatusAcrossReboots`  | If enabled, the sensor status will be persisted across reboots. If disabled, the sensor will always start as not occupied |
+| Always Boot as Occupied | `alwaysBootAsOccupied`  | If enabled, the sensor will always boot as occupied regardless of previous status. |
 
-```shell
-npm run watch
-```
+#### Switches configuration
+| Name | Key | Description                                                                                                                                      |
+| ---- | --- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Switch Name | `name`  | Name for the switch |
+| Identifier | `identifier` | Unique identifier for the switch. Leave empty to auto-generate. If you set a value, it must be unique across all switches. If you do not set a value, identifier will change when name changes which might break automations. |
+| Switch Type | `type` | Type of the switch. Possible values are: `OCCUPANCY_SWITCH`, `TRIGGER_OCCUPANCY_SWITCH`, `STAY_ON_SWITCH`, `TRIGGER_STAY_ON_SWITCH`, `PRESENCE_SWITCH`, `NOTIFICATION_SWITCH`, `MASTER_SWITCH`, `SHUTOFF_TRIGGER_SWITCH`. For more information on each switch type, please refer to the [Switch Types description](#switch-types-description). |
+| Notification Threshold | `notificationThreshold` | Threshold in percentage to trigger the notification switch. This is only used for `NOTIFICATION_SWITCH` type. If the occupancy delay reaches this threshold, the switch will toggle on and off. |
+| Minimum Notification Time | `minimumNotificationTime` | Minimum number of seconds required to trigger a notification regardless of the notification threshold. If the delay after applying the threshold is less than this time, the notification will not be triggered. |
 
-This will launch an instance of Homebridge in debug mode which will restart every time you make a change to the source code. It will load the config stored in the default location under `~/.homebridge`. You may need to stop other running instances of Homebridge while using this command to prevent conflicts. You can adjust the Homebridge startup command in the [`nodemon.json`](./nodemon.json) file.
 
-### Customise Plugin
+### Thanks and caveats
 
-You can now start customising the plugin template to suit your requirements.
+Smart Occupancy Homebridge is a hobby project of mine, provided as-is, with no warranty whatsoever. I'm running it successfully at home since I created it, but your mileage might vary.
 
-- [`src/platform.ts`](./src/platform.ts) - this is where your device setup and discovery should go.
-- [`src/platformAccessory.ts`](./src/platformAccessory.ts) - this is where your accessory control logic should go, you can rename or create multiple instances of this file for each accessory type you need to implement as part of your platform plugin. You can refer to the [developer documentation](https://developers.homebridge.io/) to see what characteristics you need to implement for each service type.
-- [`config.schema.json`](./config.schema.json) - update the config schema to match the config you expect from the user. See the [Plugin Config Schema Documentation](https://developers.homebridge.io/#/config-schema).
+If you find any bugs, please report them in the [GitHub issues](https://github.com/marcruiz/homebridge-smart-occupancy/issues).
 
-### Versioning Your Plugin
-
-Given a version number `MAJOR`.`MINOR`.`PATCH`, such as `1.4.3`, increment the:
-
-1. **MAJOR** version when you make breaking changes to your plugin,
-2. **MINOR** version when you add functionality in a backwards compatible manner, and
-3. **PATCH** version when you make backwards compatible bug fixes.
-
-You can use the `npm version` command to help you with this:
-
-```shell
-# major update / breaking changes
-npm version major
-
-# minor update / new features
-npm version update
-
-# patch / bugfixes
-npm version patch
-```
-
-### Publish Package
-
-When you are ready to publish your plugin to [npm](https://www.npmjs.com/), make sure you have removed the `private` attribute from the [`package.json`](./package.json) file then run:
-
-```shell
-npm publish
-```
-
-If you are publishing a scoped plugin, i.e. `@username/homebridge-xxx` you will need to add `--access=public` to command the first time you publish.
-
-#### Publishing Beta Versions
-
-You can publish *beta* versions of your plugin for other users to test before you release it to everyone.
-
-```shell
-# create a new pre-release version (eg. 2.1.0-beta.1)
-npm version prepatch --preid beta
-
-# publish to @beta
-npm publish --tag beta
-```
-
-Users can then install the  *beta* version by appending `@beta` to the install command, for example:
-
-```shell
-sudo npm install -g homebridge-example-plugin@beta
-```
-
-### Best Practices
-
-Consider creating your plugin with the [Homebridge Verified](https://github.com/homebridge/verified) criteria in mind. This will help you to create a plugin that is easy to use and works well with Homebridge.
-You can then submit your plugin to the Homebridge Verified list for review.
-The most up-to-date criteria can be found [here](https://github.com/homebridge/verified#requirements).
-For reference, the current criteria are:
-
-- **General**
-  - The plugin must be of type [dynamic platform](https://developers.homebridge.io/#/#dynamic-platform-template).
-  - The plugin must not offer the same nor less functionality than that of any existing **verified** plugin.
-- **Repo**
-  - The plugin must be published to NPM and the source code available on a GitHub repository, with issues enabled.
-  - A GitHub release should be created for every new version of your plugin, with release notes.
-- **Environment**
-  - The plugin must run on all [supported LTS versions of Node.js](https://github.com/homebridge/homebridge/wiki/How-To-Update-Node.js), at the time of writing this is Node v18, v20 and v22.
-  - The plugin must successfully install and not start unless it is configured.
-  - The plugin must not execute post-install scripts that modify the users' system in any way.
-  - The plugin must not require the user to run Homebridge in a TTY or with non-standard startup parameters, even for initial configuration.
-- **Codebase**
-  - The plugin must implement the [Homebridge Plugin Settings GUI](https://developers.homebridge.io/#/config-schema).
-  - The plugin must not contain any analytics or calls that enable you to track the user.
-  - If the plugin needs to write files to disk (cache, keys, etc.), it must store them inside the Homebridge storage directory.
-  - The plugin must not throw unhandled exceptions, the plugin must catch and log its own errors.
-
-### Useful Links
-
-Note these links are here for help but are not supported/verified by the Homebridge team
-
-- [Custom Characteristics](https://github.com/homebridge/homebridge-plugin-template/issues/20)
+Special thanks to [@Jason-Morcos/homebridge-magic-occupancy](https://github.com/Jason-Morcos/homebridge-magic-occupancy). This plugin was inspired by that project, but has been completely reimagined and built from the ground up with a different approach, enabling many new features and greater extensibility, flexibility, and customizability.

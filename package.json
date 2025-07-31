@@ -1,6 +1,6 @@
 {
   "name": "homebridge-smart-occupancy",
-  "displayName": "Smart Occupancy",
+  "displayName": "Smart Occupancy Homebridge",
   "type": "module",
   "version": "1.0.0",
   "private": false,
