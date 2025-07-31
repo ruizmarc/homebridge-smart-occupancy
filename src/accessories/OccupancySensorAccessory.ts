@@ -6,6 +6,7 @@ import { OccupancySensorConfig, SwitchType } from '../types/configs.js';
 import { SwitchAccessory } from './switches/SwitchAccessory.js';
 import { StorageLayer } from '../utils/StorageLayer.js';
 import { SwitchFactory } from './switches/SwitchFactory.js';
+import { VersionGetter } from '../utils/VersionGetter.js';
 
 interface OccupancySensorState {
   occupied: boolean;
@@ -23,6 +24,7 @@ export class OccupancySensorAccessory {
   public switches: Map<string, SwitchAccessory> = new Map();
 
   private log: Logging;
+  private versionGetter: VersionGetter;
 
   private occupancyStatusSubject = new Subject<boolean>();
   public occupancyStatus$ = this.occupancyStatusSubject.asObservable();
@@ -45,6 +47,7 @@ export class OccupancySensorAccessory {
     private readonly storage?: StorageLayer,
   ) {
     this.log = platform.log;
+    this.versionGetter = VersionGetter.getInstance(this.log);
 
     this.occupancySensorState = {
       occupied: false,
@@ -72,7 +75,8 @@ export class OccupancySensorAccessory {
     this.occupancySensorAccessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SmartOccupancy')
       .setCharacteristic(this.platform.Characteristic.Model, 'Occupancy Sensor')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.occupancySensorConfig.identifier);
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.occupancySensorConfig.identifier)
+      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, this.versionGetter.getVersion());
 
     this.occupancySensorService = this.occupancySensorAccessory.getService(this.platform.Service.OccupancySensor)
       ?? this.occupancySensorAccessory.addService(this.platform.Service.OccupancySensor);

@@ -4,6 +4,7 @@ import type { SmartOccupancyHomebridgePlatform } from '../../platform.js';
 import { OccupancySensorConfig, SwitchConfig, SwitchType } from '../../types/configs.js';
 import { OccupancySensorAccessory } from './../OccupancySensorAccessory.js';
 import { StorageLayer } from '../../utils/StorageLayer.js';
+import { VersionGetter } from '../../utils/VersionGetter.js';
 
 interface SwitchState {
   isOn: boolean;
@@ -18,8 +19,6 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
 
   public switchService: Service;
 
-  protected readonly MANUAL_STATUS_CHANGE_TIMEOUT = 1000; // 1 second
-
   public switchState: SwitchState = {
     isOn: false,
   };
@@ -27,6 +26,9 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
   public switchType: SwitchType;
 
   public readonly switchIdentifier: string;
+
+  protected readonly MANUAL_STATUS_CHANGE_TIMEOUT = 1000; // 1 second
+  private versionGetter: VersionGetter;
 
   constructor(
     protected readonly platform: SmartOccupancyHomebridgePlatform,
@@ -39,6 +41,7 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
 
     this.switchType = switchConfig.type;
     this.switchIdentifier = switchConfig.identifier ?? `${this.switchType}.${switchConfig.name}`;
+    this.versionGetter = VersionGetter.getInstance(this.log);
 
     this.switchService = this.occupancySensorAccessory.occupancySensorAccessory.getService(this.switchIdentifier)
       ?? this.occupancySensorAccessory.occupancySensorAccessory.addService(this.platform.Service.Switch, switchConfig.name, this.switchIdentifier);
@@ -46,7 +49,8 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
     this.switchService.setCharacteristic(this.platform.Characteristic.ConfiguredName, switchConfig.name)
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SmartOccupancy')
       .setCharacteristic(this.platform.Characteristic.Model, this.switchType)
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.switchIdentifier);
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.switchIdentifier)
+      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, this.versionGetter.getVersion());
 
     this.switchService.getCharacteristic(this.platform.Characteristic.On)
       .onGet(this.handleOnGet.bind(this))
