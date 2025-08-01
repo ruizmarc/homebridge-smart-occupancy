@@ -148,12 +148,6 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
     return true;
   }
 
-  protected shouldGoOccupied(): boolean {
-    return this.switchState.isOn
-      && !this.occupancySensorAccessory.occupancySensorState.occupied
-      && this.enoughTimeHasPassedSinceLastTrigger();
-  }
-
   protected enoughTimeHasPassedSinceLastTrigger(): boolean {
     if (!this.occupancySensorAccessory.occupancySensorState.lastTriggeredAt) {
       return true;
@@ -161,7 +155,7 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
     const lastTriggeredTime = new Date(this.occupancySensorAccessory.occupancySensorState.lastTriggeredAt).getTime();
     const currentTime = Date.now();
     const timeDifference = currentTime - lastTriggeredTime;
-    const enoughTimeHasPassed = timeDifference >= (this.sensorConfig.newOccupancyTimeout ?? 0) * 1000;
+    const enoughTimeHasPassed = timeDifference >= ((this.sensorConfig.newOccupancyTimeout ?? 0) * 1000);
     return enoughTimeHasPassed;
   }
 

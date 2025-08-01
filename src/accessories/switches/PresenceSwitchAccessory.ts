@@ -32,14 +32,17 @@ export class PresenceSwitchAccessory extends SwitchAccessory {
     if (!occupancyMightChange) {
       return;
     }
-    const shouldGoOccupied = this.shouldGoOccupied();
-    if (shouldGoOccupied) {
-      this.log.info(`${this.switchType}: ${this.switchConfig.name} turned ON, setting occupancy to ON`);
-      this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchType, switchIdentifier: this.switchIdentifier });
+
+    if (!this.enoughTimeHasPassedSinceLastTrigger()) {
+      this.log.info(`${this.switchType}: ${this.switchConfig.name} turned ON but not enough time has passed since last trigger. Ignoring action.`);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       return;
     }
+
+    this.log.info(`${this.switchType}: ${this.switchConfig.name} turned ON, setting occupancy to ON`);
+    this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchType, switchIdentifier: this.switchIdentifier });
   }
-  
+
   protected triggerSwitchOffActions(): void {
     const occupancyMightChange = this.occupancyMightChange();
     if (!occupancyMightChange) {
