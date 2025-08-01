@@ -2,7 +2,7 @@
   "name": "homebridge-smart-occupancy",
   "displayName": "Smart Occupancy Homebridge",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": false,
   "description": "Create flexible and customizable occupancy sensors for Homebridge with extra switches and triggers to control sensor and occupancy delay behavior.",
   "author": "ruizmarc",
