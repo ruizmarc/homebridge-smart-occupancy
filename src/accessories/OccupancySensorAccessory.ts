@@ -69,7 +69,7 @@ export class OccupancySensorAccessory {
       .catch((error) => {
         this.log.error(`Failed to initialize occupancy sensor status for ${occupancySensorConfig.name}:`, error);
       });
-      
+
     this.subscribeToOccupancyStatusChanges();
   }
 
@@ -78,7 +78,8 @@ export class OccupancySensorAccessory {
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SmartOccupancy')
       .setCharacteristic(this.platform.Characteristic.Model, 'Occupancy Sensor')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, this.occupancySensorConfig.identifier)
-      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, this.versionGetter.getVersion());
+      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, this.versionGetter.getVersion())
+      .setCharacteristic(this.platform.Characteristic.ConfiguredName, this.occupancySensorConfig.name);
 
     this.occupancySensorService = this.occupancySensorAccessory.getService(this.platform.Service.OccupancySensor)
       ?? this.occupancySensorAccessory.addService(this.platform.Service.OccupancySensor);
