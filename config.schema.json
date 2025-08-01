@@ -1,296 +1,303 @@
 {
-    "pluginAlias": "SmartOccupancy",
-    "pluginType": "platform",
-    "singular": true,
-    "strictValidation": false,
-    "layout": [
+  "pluginAlias": "SmartOccupancy",
+  "pluginType": "platform",
+  "singular": true,
+  "strictValidation": false,
+  "layout": [
+    {
+      "type": "section",
+      "title": "Platform Settings",
+      "items": [
+        "name"
+      ]
+    },
+    {
+      "key": "sensors",
+      "type": "array",
+      "items": [
         {
-            "type": "section",
-            "title": "Platform Settings",
-            "items": [
-                "name"
-            ]
-        },
-        {
-            "key": "sensors",
-            "type": "array",
-            "items": [
+          "type": "fieldset",
+          "title": "Sensor config",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            "sensors[].name",
+            "sensors[].identifier",
+            {
+              "type": "div",
+              "displayFlex": true,
+              "flex-direction": "row",
+              "items": [
                 {
-                    "type": "fieldset",
-                    "title": "Sensor config",
-                    "expandable": true,
-                    "expanded": false,
-                    "items": [
-                        "sensors[].name",
-                        "sensors[].identifier",
-                        {
-                            "type": "div",
-                            "displayFlex": true,
-                            "flex-direction": "row",
-                            "items": [
-                                {
-                                    "key": "sensors[].stayOccupiedDelay",
-                                    "flex": "1 1 33%"
-                                },
-                                {
-                                    "key": "sensors[].stayOccupiedTimeout",
-                                    "flex": "2 2 33%"
-                                },
-                                {
-                                    "key": "sensors[].newOccupancyTimeout",
-                                    "flex": "3 3 33%"
-                                }
-                            ]
-                        },
-                        "sensors[].progressiveDelay",
-                        {
-                            "type": "flex",
-                            "flex-flow": "row no-wrap",
-                            "items": [
-                                "sensors[].progressionStart",
-                                "sensors[].progressionStep"
-                            ]
-                        },
-                        "sensors[].persistStatusAcrossReboots",
-                        "sensors[].alwaysBootAsOccupied",
-                        {
-                            "key": "sensors[].switches",
-                            "type": "array",
-                            "items": [
-                                {
-                                    "type": "fieldset",
-                                    "title": "Swtich config",
-                                    "expandable": true,
-                                    "expanded": false,
-                                    "items": [
-                                        "sensors[].switches[].name",
-                                        "sensors[].switches[].identifier",
-                                        "sensors[].switches[].type",
-                                        {
-                                            "type": "div",
-                                            "displayFlex": true,
-                                            "flex-direction": "row",
-                                            "items": [
-                                                {
-                                                    "key": "sensors[].switches[].notificationThreshold",
-                                                    "flex": "1 1 50%"
-                                                },
-                                                {
-                                                    "key": "sensors[].switches[].minimumNotificationTime",
-                                                    "flex": "2 2 50%"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
+                  "key": "sensors[].stayOccupiedDelay",
+                  "flex": "1 1 33%"
+                },
+                {
+                  "key": "sensors[].stayOccupiedTimeout",
+                  "flex": "2 2 33%"
+                },
+                {
+                  "key": "sensors[].newOccupancyTimeout",
+                  "flex": "3 3 33%"
                 }
-            ]
-        }
-    ],
-    "schema": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "title": "Name",
-                "type": "string",
-                "required": true,
-                "default": "Smart Occupancy"
+              ]
             },
-            "sensors": {
-                "title": "Sensors",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "title": "Sensor Name",
-                            "type": "string",
-                            "required": true
-                        },
-                        "identifier": {
-                            "title": "Identifier",
-                            "type": "string",
-                            "required": false,
-                            "description": "Unique identifier for the sensor. Leave empty to auto-generate. If you set a value, it must be unique across all sensors. If you do not set a value, identifier will change when name changes which might break automations."
-                        },
-                        "stayOccupiedDelay": {
-                            "title": "Stay occupied delay",
-                            "type": "number",
-                            "default": 30,
-                            "minimum": 0,
-                            "description": "Time in seconds before the sensor turns off automatically. Set 0 to shutoff as soon as not occupied."
-                        },
-                        "stayOccupiedTimeout": {
-                            "title": "Stay Occupied Timeout",
-                            "type": "number",
-                            "default": 0,
-                            "minimum": 0,
-                            "description": "Set the maximum time in seconds that occupancy sensor can stay as occupied. When timeout is reached sensor and all switches will be turned off. Set to 0 to keep it occupied indefinitely until any other trigger turns it off."
-                        },
-                        "newOccupancyTimeout": {
-                            "title": "New Occupancy Timeout",
-                            "type": "number",
-                            "default": 0,
-                            "minimum": 0,
-                            "description": "Time in seconds to wait before being able to trigger a new occupancy event after the latest one. The first one will trigger immediately."
-                        },
-                        "progressiveDelay": {
-                            "title": "Progressive Delay",
-                            "type": "boolean",
-                            "default": false,
-                            "description": "Enable progressive delay to increase the delay duration with each delay activation until it reaches your delay config. This is useful when motion sensors are used in areas with frequent activity, allowing the delay to adapt to usage, for example if they are entering or leaving the covered area by the sensor frequently so that you want to avoid unnecessary on/off triggers.<br />When enabled, the delay will start at the configured `progressionStart` value and increase by `progressionStep` seconds each time the delay is cancelled by another activation until it reaches the configured `delay` value."
-                        },
-                        "progressionStart": {
-                            "title": "Progressive Delay Start",
-                            "type": "number",
-                            "default": 5,
-                            "minimum": 1,
-                            "description": "Initial delay value in seconds for the progressive delay.",
-                            "condition": {
-                                "functionBody": "return model.sensors[arrayIndices].progressiveDelay === true;"
-                            }
-                        },
-                        "progressionStep": {
-                            "title": "Progressive Delay Step",
-                            "type": "number",
-                            "default": 5,
-                            "minimum": 1,
-                            "description": "Step in seconds to increase the delay duration when progressive delay is enabled until reaching stayOccupiedDelay.",
-                            "condition": {
-                                "functionBody": "return model.sensors[arrayIndices].progressiveDelay === true;"
-                            }
-                        },
-                        "persistStatusAcrossReboots": {
-                            "title": "Persist Status Across Reboots",
-                            "type": "boolean",
-                            "default": true,
-                            "description": "If enabled, the sensor status will be persisted across reboots. If disabled, the sensor will always start as not occupied."
-                        },
-                        "alwaysBootAsOccupied": {
-                            "title": "Always Boot as Occupied",
-                            "type": "boolean",
-                            "default": false,
-                            "description": "If enabled, the sensor will always boot as occupied regardless of previous status.",
-                            "condition": {
-                                "functionBody": "return model.sensors[arrayIndices].persistStatusAcrossReboots === false;"
-                            }
-                        },
-                        "switches": {
-                            "title": "Sensor switches",
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "title": "Switch Name",
-                                        "type": "string",
-                                        "required": true
-                                    },
-                                    "identifier": {
-                                        "title": "Identifier",
-                                        "type": "string",
-                                        "required": false,
-                                        "description": "Unique identifier for the switch. Leave empty to auto-generate. If you set a value, it must be unique across all switches. If you do not set a value, identifier will change when name changes which might break automations."
-                                    },
-                                    "type": {
-                                        "title": "Switch Type",
-                                        "type": "string",
-                                        "required": true,
-                                        "description": "Type of switch to use with this sensor.",
-                                        "oneOf": [
-                                            {
-                                                "title": "Occupancy Switch",
-                                                "enum": [
-                                                    "OCCUPANCY_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Trigger Occupancy Switch",
-                                                "enum": [
-                                                    "TRIGGER_OCCUPANCY_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Stay-on Switch",
-                                                "enum": [
-                                                    "STAY_ON_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Stay on Switch",
-                                                "enum": [
-                                                    "STAY_ON_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Trigger Stay On Switch",
-                                                "enum": [
-                                                    "TRIGGER_STAY_ON_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Presence Switch",
-                                                "enum": [
-                                                    "PRESENCE_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Occupancy Progress Notification Switch",
-                                                "enum": [
-                                                    "NOTIFICATION_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Master Switch",
-                                                "enum": [
-                                                    "MASTER_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Disable Occupancy Switch",
-                                                "enum": [
-                                                    "DISABLE_OCCUPANCY_SWITCH"
-                                                ]
-                                            },
-                                            {
-                                                "title": "Shutoff Trigger Switch",
-                                                "enum": [
-                                                    "TRIGGER_SHUTOFF_SWITCH"
-                                                ]
-                                            }
-                                        ],
-                                        "default": "PRESENCE_SWITCH"
-                                    },
-                                    "notificationThreshold": {
-                                        "title": "Notification Threshold",
-                                        "type": "number",
-                                        "placeholder": 75,
-                                        "minimum": 0,
-                                        "maximum": 100,
-                                        "description": "Percentage of delay consumed before triggering switch.",
-                                        "condition": {
-                                            "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
-                                        }
-                                    },
-                                    "minimumNotificationTime": {
-                                        "title": "Minimum Notification Time",
-                                        "type": "number",
-                                        "placeholder": 5,
-                                        "minimum": 0,
-                                        "description": "Minimum number of seconds required to trigger a notification regardless of the notification threshold. If the delay after applying the threshold is less than this time, the notification will not be triggered.",
-                                        "condition": {
-                                            "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+            "sensors[].progressiveDelay",
+            {
+              "type": "div",
+              "displayFlex": true,
+              "flex-direction": "row",
+              "items": [
+                {
+                  "key": "sensors[].progressionStart",
+                  "flex": "1 1 50%"
+                },
+                {
+                  "key": "sensors[].progressionStep",
+                  "flex": "2 2 50%"
                 }
+              ]
+            },
+            "sensors[].persistStatusAcrossReboots",
+            "sensors[].alwaysBootAsOccupied",
+            {
+              "key": "sensors[].switches",
+              "type": "array",
+              "items": [
+                {
+                  "type": "fieldset",
+                  "title": "Swtich config",
+                  "expandable": true,
+                  "expanded": false,
+                  "items": [
+                    "sensors[].switches[].name",
+                    "sensors[].switches[].identifier",
+                    "sensors[].switches[].type",
+                    {
+                      "type": "div",
+                      "displayFlex": true,
+                      "flex-direction": "row",
+                      "items": [
+                        {
+                          "key": "sensors[].switches[].notificationThreshold",
+                          "flex": "1 1 50%"
+                        },
+                        {
+                          "key": "sensors[].switches[].minimumNotificationTime",
+                          "flex": "2 2 50%"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
+          ]
         }
+      ]
     }
+  ],
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "Smart Occupancy"
+      },
+      "sensors": {
+        "title": "Sensors",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Sensor Name",
+              "type": "string",
+              "required": true
+            },
+            "identifier": {
+              "title": "Identifier",
+              "type": "string",
+              "required": false,
+              "description": "Unique identifier for the sensor. Leave empty to auto-generate. If you set a value, it must be unique across all sensors. If you do not set a value, identifier will change when name changes which might break automations."
+            },
+            "stayOccupiedDelay": {
+              "title": "Stay occupied delay",
+              "type": "number",
+              "default": 30,
+              "minimum": 0,
+              "description": "Time in seconds before the sensor turns off automatically. Set 0 to shutoff as soon as not occupied."
+            },
+            "stayOccupiedTimeout": {
+              "title": "Stay Occupied Timeout",
+              "type": "number",
+              "default": 0,
+              "minimum": 0,
+              "description": "Set the maximum time in seconds that occupancy sensor can stay as occupied. When timeout is reached sensor and all switches will be turned off. Set to 0 to keep it occupied indefinitely until any other trigger turns it off."
+            },
+            "newOccupancyTimeout": {
+              "title": "New Occupancy Timeout",
+              "type": "number",
+              "default": 0,
+              "minimum": 0,
+              "description": "Time in seconds to wait before being able to trigger a new occupancy event after the latest one. The first one will trigger immediately."
+            },
+            "progressiveDelay": {
+              "title": "Progressive Delay",
+              "type": "boolean",
+              "default": false,
+              "description": "Enable progressive delay to increase the delay duration with each delay activation until it reaches your delay config. This is useful when motion sensors are used in areas with frequent activity, allowing the delay to adapt to usage, for example if they are entering or leaving the covered area by the sensor frequently so that you want to avoid unnecessary on/off triggers.<br />When enabled, the delay will start at the configured `progressionStart` value and increase by `progressionStep` seconds each time the delay is cancelled by another activation until it reaches the configured `delay` value."
+            },
+            "progressionStart": {
+              "title": "Progressive Delay Start",
+              "type": "number",
+              "default": 5,
+              "minimum": 1,
+              "description": "Initial delay value in seconds for the progressive delay.",
+              "condition": {
+                "functionBody": "return model.sensors[arrayIndices].progressiveDelay === true;"
+              }
+            },
+            "progressionStep": {
+              "title": "Progressive Delay Step",
+              "type": "number",
+              "default": 5,
+              "minimum": 1,
+              "description": "Step in seconds to increase the delay duration when progressive delay is enabled until reaching stayOccupiedDelay.",
+              "condition": {
+                "functionBody": "return model.sensors[arrayIndices].progressiveDelay === true;"
+              }
+            },
+            "persistStatusAcrossReboots": {
+              "title": "Persist Status Across Reboots",
+              "type": "boolean",
+              "default": true,
+              "description": "If enabled, the sensor status will be persisted across reboots. If disabled, the sensor will always start as not occupied."
+            },
+            "alwaysBootAsOccupied": {
+              "title": "Always Boot as Occupied",
+              "type": "boolean",
+              "default": false,
+              "description": "If enabled, the sensor will always boot as occupied regardless of previous status.",
+              "condition": {
+                "functionBody": "return model.sensors[arrayIndices].persistStatusAcrossReboots === false;"
+              }
+            },
+            "switches": {
+              "title": "Sensor switches",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Switch Name",
+                    "type": "string",
+                    "required": true
+                  },
+                  "identifier": {
+                    "title": "Identifier",
+                    "type": "string",
+                    "required": false,
+                    "description": "Unique identifier for the switch. Leave empty to auto-generate. If you set a value, it must be unique across all switches. If you do not set a value, identifier will change when name changes which might break automations."
+                  },
+                  "type": {
+                    "title": "Switch Type",
+                    "type": "string",
+                    "required": true,
+                    "description": "Type of switch to use with this sensor.",
+                    "oneOf": [
+                      {
+                        "title": "Occupancy Switch",
+                        "enum": [
+                          "OCCUPANCY_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Trigger Occupancy Switch",
+                        "enum": [
+                          "TRIGGER_OCCUPANCY_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Stay-on Switch",
+                        "enum": [
+                          "STAY_ON_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Stay on Switch",
+                        "enum": [
+                          "STAY_ON_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Trigger Stay On Switch",
+                        "enum": [
+                          "TRIGGER_STAY_ON_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Presence Switch",
+                        "enum": [
+                          "PRESENCE_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Occupancy Progress Notification Switch",
+                        "enum": [
+                          "NOTIFICATION_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Master Switch",
+                        "enum": [
+                          "MASTER_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Disable Occupancy Switch",
+                        "enum": [
+                          "DISABLE_OCCUPANCY_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Shutoff Trigger Switch",
+                        "enum": [
+                          "TRIGGER_SHUTOFF_SWITCH"
+                        ]
+                      }
+                    ],
+                    "default": "PRESENCE_SWITCH"
+                  },
+                  "notificationThreshold": {
+                    "title": "Notification Threshold",
+                    "type": "number",
+                    "placeholder": 75,
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Percentage of delay consumed before triggering switch.",
+                    "condition": {
+                      "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
+                    }
+                  },
+                  "minimumNotificationTime": {
+                    "title": "Minimum Notification Time",
+                    "type": "number",
+                    "placeholder": 5,
+                    "minimum": 0,
+                    "description": "Minimum number of seconds required to trigger a notification regardless of the notification threshold. If the delay after applying the threshold is less than this time, the notification will not be triggered.",
+                    "condition": {
+                      "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
