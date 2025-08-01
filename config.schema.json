@@ -163,6 +163,12 @@
                         ]
                       },
                       {
+                        "title": "Disable Occupancy Switch",
+                        "enum": [
+                          "DISABLE_OCCUPANCY_SWITCH"
+                        ]
+                      },
+                      {
                         "title": "Shutoff Trigger Switch",
                         "enum": [
                           "TRIGGER_SHUTOFF_SWITCH"
