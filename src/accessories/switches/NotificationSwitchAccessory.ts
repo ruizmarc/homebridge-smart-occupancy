@@ -16,11 +16,15 @@ export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwi
     log: Logging,
     storage?: StorageLayer,
   ) {
+
+    switchConfig.minimumNotificationTime ??= 0;
+    switchConfig.notificationThreshold ??= 0;
+
     super(platform, occupancySensorAccessory, switchConfig, sensorConfig, log, storage);
 
     this.occupancySensorAccessory.timerStarted$.subscribe(() => {
       const timerDurationSeconds = this.occupancySensorAccessory.occupancySensorState.nextDelaySeconds * (this.switchConfig.notificationThreshold / 100);
-      if (timerDurationSeconds < this.switchConfig.minimumNotificationTime) {
+      if (timerDurationSeconds && timerDurationSeconds < this.switchConfig.minimumNotificationTime) {
         return;
       }
       this.log.debug(`${this.switchType}: ${this.switchConfig.name} will trigger after ${timerDurationSeconds} seconds`);
