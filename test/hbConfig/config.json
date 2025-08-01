@@ -76,8 +76,13 @@
               "identifier": "desk-master-switch"
             },
             {
+              "name": "Desk disable occupancy switch",
+              "type": "DISABLE_OCCUPANCY_SWITCH",
+              "identifier": "desk-disable-occupancy-switch"
+            },
+            {
               "name": "Desk shutoff switch",
-              "type": "SHUTOFF_TRIGGER_SWITCH",
+              "type": "TRIGGER_SHUTOFF_SWITCH",
               "identifier": "desk-shutoff-trigger-switch"
             }
           ]

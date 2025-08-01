@@ -128,7 +128,7 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
       SwitchType.TRIGGER_OCCUPANCY_SWITCH,
       SwitchType.STAY_ON_SWITCH,
       SwitchType.TRIGGER_STAY_ON_SWITCH,
-      SwitchType.SHUTOFF_TRIGGER_SWITCH,
+      SwitchType.TRIGGER_SHUTOFF_SWITCH,
     ];
     return this.occupancySensorAccessory.occupancySensorState.occupied
       && this.switchState.isOn
@@ -169,11 +169,19 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
     const blockingSwitchIsTurnedOn = Array.from(switchAccessories.values())
       .some(switchAccessory => switchAccessory.switchState.isOn
         && switchAccessory !== this
-        && blockingUnoccupySwitchTypes.includes(switchAccessory.switchConfig.type));
+        && blockingUnoccupySwitchTypes.includes(switchAccessory.switchType));
 
     const prioritySwitchIsBlockingUnoccupy = this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchType === SwitchType.PRESENCE_SWITCH
       || this.occupancySensorAccessory.occupancySensorState.triggeredBySwitchType === SwitchType.MASTER_SWITCH;
     return blockingSwitchIsTurnedOn || prioritySwitchIsBlockingUnoccupy;
+  }
+
+  protected otherSwitchHasDisabledOccupancy(): boolean {
+    const switchAccessories = this.occupancySensorAccessory.switches;
+    return Array.from(switchAccessories.values())
+      .some(switchAccessory => switchAccessory.switchState.isOn
+        && switchAccessory !== this
+        && switchAccessory.switchType === SwitchType.DISABLE_OCCUPANCY_SWITCH);
   }
 
 }

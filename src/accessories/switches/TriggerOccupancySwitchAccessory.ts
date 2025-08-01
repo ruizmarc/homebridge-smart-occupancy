@@ -14,13 +14,19 @@ export class TriggerOccupancySwitchAccessory extends SwitchAccessory {
 
     const occupancyMightChange = this.occupancyMightChange();
     if (!occupancyMightChange) {
-      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: true }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       return;
     }
 
     if (!this.enoughTimeHasPassedSinceLastTrigger()) {
       this.log.info(` ${this.switchType}: ${this.switchConfig.name} turned ON but not enough time has passed since last trigger. Ignoring action.`);
-      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: true }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
+      return;
+    }
+
+    if (this.otherSwitchHasDisabledOccupancy()) {
+      this.log.debug(`${this.switchType}: Other switch has disabled occupancy, not changing occupancy status.`);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
       return;
     }
 

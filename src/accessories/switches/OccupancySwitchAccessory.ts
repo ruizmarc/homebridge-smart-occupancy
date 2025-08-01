@@ -21,6 +21,12 @@ export class OccupancySwitchAccessory extends SwitchAccessory {
       return;
     }
 
+    if (this.otherSwitchHasDisabledOccupancy()) {
+      this.log.debug(`${this.switchType}: Other switch has disabled occupancy, not changing occupancy status.`);
+      setTimeout(() => this.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false }), this.MANUAL_STATUS_CHANGE_TIMEOUT);
+      return;
+    }
+
     this.log.info(`${this.switchType}: ${this.switchConfig.name} turned ON, setting occupancy to ON`);
     this.occupancySensorAccessory.setOccupancyStatus(true, { switchType: this.switchType, switchIdentifier: this.switchIdentifier });
   }

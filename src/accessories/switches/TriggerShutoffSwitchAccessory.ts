@@ -1,6 +1,6 @@
 import { SwitchAccessory } from './SwitchAccessory.js';
 
-export class ShutoffSwitchAccessory extends SwitchAccessory {
+export class TriggerShutoffSwitchAccessory extends SwitchAccessory {
 
   protected triggerSwitchOnActions(): void {
     this.log.info(`${this.switchType}: ${this.switchConfig.name} changed to ON.`);
