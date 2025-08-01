@@ -25,9 +25,7 @@ export class MasterSwitchAccessory extends SwitchAccessory {
     this.occupancySensorAccessory.cancelCurrentUnoccupancyTimer();
     for (const switchAccessory of allSwitches) {
       this.log.debug(`Turning off switch ${switchAccessory.switchIdentifier} as part of master switch turning off action.`);
-      if (switchAccessory.switchState.isOn
-        && switchAccessory.switchIdentifier !== this.switchIdentifier
-      ) {
+      if (switchAccessory.switchState.isOn) {
         switchAccessory.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false });
       }
     }

@@ -34,15 +34,20 @@
               "type": "number",
               "default": 30,
               "minimum": 0,
-              "maximum": 3600,
-              "description": "Maximum time in seconds before the sensor turns off automatically. Set 0 to shutoff as soon as not occupied."
+              "description": "Time in seconds before the sensor turns off automatically. Set 0 to shutoff as soon as not occupied."
+            },
+            "stayOccupiedTimeout": {
+              "title": "Stay Occupied Timeout",
+              "type": "number",
+              "default": 0,
+              "minimum": 0,
+              "description": "Set the maximum time in seconds that occupancy sensor can stay as occupied. When timeout is reached sensor and all switches will be turned off. Set to 0 to keep it occupied indefinitely until any other trigger turns it off."
             },
             "newOccupancyTimeout": {
               "title": "New Occupancy Timeout",
               "type": "number",
               "default": 0,
               "minimum": 0,
-              "maximum": 3600,
               "description": "Time in seconds to wait before being able to trigger a new occupancy event after the latest one. The first one will trigger immediately."
             },
             "progressiveDelay": {
@@ -56,7 +61,6 @@
               "type": "number",
               "default": 5,
               "minimum": 1,
-              "maximum": 3600,
               "description": "Initial delay value in seconds for the progressive delay.",
               "condition": {
                 "functionBody": "return model.sensors[arrayIndices].progressiveDelay === true;"
@@ -67,8 +71,7 @@
               "type": "number",
               "default": 5,
               "minimum": 1,
-              "maximum": 3600,
-              "description": "Step in seconds to increase the delay duration when progressive delay is enabled.",
+              "description": "Step in seconds to increase the delay duration when progressive delay is enabled until reaching stayOccupiedDelay.",
               "condition": {
                 "functionBody": "return model.sensors[arrayIndices].progressiveDelay === true;"
               }
@@ -185,7 +188,6 @@
                     "type": "number",
                     "default": 5,
                     "minimum": 0,
-                    "maximum": 3600,
                     "description": "Minimum number of seconds required to trigger a notification regardless of the notification threshold. If the delay after applying the threshold is less than this time, the notification will not be triggered.",
                     "condition": {
                       "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"

@@ -9,6 +9,7 @@ export interface OccupancySensorConfig {
     name: string;
     identifier: string;
     stayOccupiedDelay: number;
+    stayOccupiedTimeout: number;
     newOccupancyTimeout: number;
     progressiveDelay: number;
     progressionStart: number;

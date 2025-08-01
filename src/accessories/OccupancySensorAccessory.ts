@@ -1,5 +1,5 @@
 import { type CharacteristicValue, type Logging, type PlatformAccessory, type Service } from 'homebridge';
-import { Observable, Subject, takeUntil, timer } from 'rxjs';
+import { filter, map, Observable, Subject, take, takeUntil, timer } from 'rxjs';
 
 import type { SmartOccupancyHomebridgePlatform } from '../platform.js';
 import { OccupancySensorConfig, SwitchType } from '../types/configs.js';
@@ -69,6 +69,8 @@ export class OccupancySensorAccessory {
       .catch((error) => {
         this.log.error(`Failed to initialize occupancy sensor status for ${occupancySensorConfig.name}:`, error);
       });
+      
+    this.subscribeToOccupancyStatusChanges();
   }
 
   private initAccessoryInformation() {
@@ -282,6 +284,40 @@ export class OccupancySensorAccessory {
     const currentTime = Date.now();
     const timeSinceLastTrigger = (currentTime - lastTriggeredTime) / 1000;
     return timeSinceLastTrigger < (this.occupancySensorState.nextDelaySeconds + this.occupancySensorConfig.progressionStep);
+  }
+
+  private subscribeToOccupancyStatusChanges() {
+    if (!this.occupancySensorConfig.stayOccupiedTimeout) {
+      return;
+    }
+    this.occupancyStatus$.subscribe((occupied) => {
+      if (!occupied) {
+        return;
+      }
+      this.log.debug(`Occupancy is on for ${this.occupancySensorConfig.name}, starting ${this.occupancySensorConfig.stayOccupiedTimeout} seconds timeout`);
+      timer(this.occupancySensorConfig.stayOccupiedTimeout * 1000).pipe(
+        takeUntil(
+          this.occupancyStatus$.pipe(
+            filter((occupied) => !occupied),
+            take(1),
+            map((cancelledEvent) => {
+              this.log.debug('Timer for stay occupied timeout cancelled');
+              return cancelledEvent;
+            }),
+          ),
+        ),
+      ).subscribe(() => {
+        this.log.info(`Stay occupied timeout reached, setting occupancy to OFF for ${this.occupancySensorConfig.name}`);
+        this.cancelCurrentUnoccupancyTimer();
+        for (const switchAccessory of this.switches.values()) {
+          if (switchAccessory.switchState.isOn) {
+            this.log.debug(`Turning off switch ${switchAccessory.switchIdentifier} as part of stay occupied timeout.`);
+            switchAccessory.setStatus(false, { updateCharacteristic: true, triggerSwitchActions: false });
+          }
+        }
+        this.setOccupancyStatus(false, undefined, { updateAccessoryService: true });
+      });
+    });
   }
 
 }

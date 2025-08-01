@@ -30,6 +30,7 @@
           "name": "Desk sensor",
           "identifier": "desk-sensor",
           "stayOccupiedDelay": 30,
+          "stayOccupiedTimeout": 0,
           "newOccupancyTimeout": 0,
           "progressiveDelay": true,
           "progressionStart": 5,

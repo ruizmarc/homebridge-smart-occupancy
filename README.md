@@ -103,6 +103,7 @@ These automations add the fancy elements of turning on the hallway lights when t
       "name": "Desk sensor",
       "identifier": "desk-sensor",
       "stayOccupiedDelay": 30,
+      "stayOccupiedTimeout": 0,
       "newOccupancyTimeout": 0,
       "progressiveDelay": true,
       "progressionStart": 5,
@@ -164,7 +165,8 @@ These automations add the fancy elements of turning on the hallway lights when t
 | ---- | --- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Sensor Name | `name`  | Name for the sensor |
 | Identifier | `identifier` | Unique identifier for the sensor. Leave empty to auto-generate. If you set a value, it must be unique across all sensors. If you do not set a value, identifier will change when name changes which might break automations |
-| Stay Occupied Delay | `stayOccupiedDelay` | Maximum time in seconds before the sensor turns off automatically. Set 0 to shutoff as soon as not occupied. |
+| Stay Occupied Delay | `stayOccupiedDelay` | Time in seconds before the sensor turns off automatically. Set 0 to shutoff as soon as not occupied. |
+| Stay Occupied Timeout | `stayOccupiedTimeout` | Set the maximum time in seconds that occupancy sensor can stay as occupied. When timeout is reached sensor and all switches will be turned off. Set to 0 to keep it occupied indefinitely until any other trigger turns it off. |
 | New Occupancy Timeout | `newOccupancyTimeout` | Time in seconds to wait before being able to trigger a new occupancy event after the latest one. The first one will trigger immediately. |
 | Progressive Delay | `progressiveDelay`  | Enable progressive delay to increase the delay duration with each delay activation until it reaches your delay config. This is useful when motion sensors are used in areas with frequent activity, allowing the delay to adapt to usage, for example if they are entering or leaving the covered area by the sensor frequently so that you want to avoid unnecessary on/off triggers.<br />When enabled, the delay will start at the configured `progressionStart` value and increase by `progressionStep` seconds each time the delay is cancelled by another activation until it reaches the configured `delay` value. |
 | Progressive Delay Start | `progressionStart`  | Initial delay value in seconds for the progressive delay. |
