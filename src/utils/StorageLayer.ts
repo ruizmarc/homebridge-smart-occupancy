@@ -20,7 +20,7 @@ export class StorageLayer {
     this.storage = await storage.create({
       dir: this.persistPath,
       forgiveParseErrors: true,
-      logging: true,
+      logging: false,
     });
     await this.storage.init();
   }
