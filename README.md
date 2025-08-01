@@ -1,5 +1,5 @@
 <p align="center">
-   <a href="https://github.com/ruizmarc/homebridge-smart-occupancy"><img alt="Smart Occupancy Homebridge" src="https://github.com/ruizmarc/homebridge-smart-occupancy/assets/5717082/267ea081-2be2-4712-bb89-48d750124f3f" width="600px"></a>
+   <a href="https://github.com/ruizmarc/homebridge-smart-occupancy"><img width="256" height="256" alt="Smart Occupancy Homebridge" src="https://github.com/user-attachments/assets/684e04c4-56c2-46f7-8584-a0643e117bed" /></a>
 </p>
 
 <span align="center">
