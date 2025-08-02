@@ -56,7 +56,7 @@ Another example of a situation in which this plugin can be useful is to control 
 
 We can find other less common use cases, if you have a hallway light that you want to turn on when the garage opens and then keep it on as long as you have motion anywhere in the house or until it reaches a maximum timeout. However you wouldn't want motion in the house to normally turn the light on. Using a combination of occupancy switch and stay-on switch and adding a timeout config you would be able to achieve this.
 
-And if you like to bring your interaction with your surroundings to the next level, you could use this plugin to notify you when the occupancy delay is approaching to the end, so you will know when the lights are about to turn off by using a notification switch that dims the lights when the occupancy delay is about to end before they totally turn off so you can take action if you want to keep them on.
+And if you like to bring your interaction with your surroundings to the next level, you could use this plugin to notify you when the occupancy delay is approaching to the end, so you will know when the lights are about to turn off by using a delay progress notification switch that dims the lights when the occupancy delay is about to end before they totally turn off so you can take action if you want to keep them on or you can do it automatically, for example, set them to 100% again if the delay gets cancelled using the cancel delay notification switch.
 
 You can also disable the occupancy sensor so it never triggers, for example if you have organized a films night or when you are taking a nap and don't want the lights to turn on/off automatically. 
 
@@ -71,6 +71,7 @@ The combinations are endless, and you will find a way to fit your own scenarios.
 * **Stay-on Trigger Switch**: It will reset the delay when switch is on if occupancy is already on, otherwise it will do nothing.
 * **Presence Switch**: It mimics the status of the occupancy sensor. If activated before occupancy is on, it will turn on the occupancy sensor and keep it active until it is turned off by turning off the presence switch.
 * **Occupancy Progress Notification Switch**: It will toggle on and off after the occupancy delay reaches the configured time. Useful to notify other automations the occupancy delay is progress.
+* **Cancel Delay Notification Switch**: It will toggle on and off after the occupancy delay get cancelled, but only if the occupancy sensor is currently active, otherwise you would be using occupancy turned off event. Useful to notify other automations that the occupancy delay was cancelled.
 * **Master Switch**: It will turn on/off occupancy sensor by stopping any action by any other trigger.
 * **Disable Occupancy Switch**: It will turn off and disable the occupancy sensor, so it will not trigger occupancy events. This is useful to prevent the occupancy sensor from turning on when you don't want it to.
 * **Trigger Shutoff Switch**: It will turn off the occupancy sensor and stop the delay.
@@ -84,7 +85,7 @@ In case multiple switches are configured, there is a priority order to determine
 3. **Occupancy Switch** and **Stay on Switch**: If any of the two are on, no other switch will be able to turn off the occupancy sensor except for themselves and the Master, Disable or Trigger Shutoff Switch, not even those triggering a delay as delay will not get activated.
 4. **Presence Switch**: Presence switch will always do what the occupancy sensor is doing, so it will not take precedence over any other switch, except in case the occupancy sensor is off and the presence switch is turned on, in this case, it will turn on the occupancy sensor and keep it active until it is turned off as the highest priority switch except for the Master, Disable or Trigger Shutoff Switch.
 5. **Trigger Occupancy Switch** and **Trigger Stay on Switch**: If any of the two are triggered, they will start the delay to turn off the occupancy sensor however, if any other switch triggering a delay activates the delay, for example turning off the `Occupancy Switch`, the current delay count will be cancelled and a new delay will start from the beginning.
-6. **Occupancy Progress Notification Switch**: As it is only a signal, it does not affect the rest of switches.
+6. **Occupancy Progress Notification Switch** and **Cancel Delay Notification Switch**: As it is only a signal, it does not affect the rest of switches.
 
 ### HomeKit Automations
 
@@ -96,7 +97,8 @@ Here are some examples of HomeKit automations you can create with this plugin:
 * When Hallway Occupancy Sensor Stops Detecting Occupancy -> Turn off Hallway Light
 * When Hallway Motion Sensor Detects Motion -> Turn on Hallway Occupancy Switch
 * When Hallway Motion Sensor Stops Detecting Motion -> Turn off Hallway Occupancy Switch
-* When Hallway Notification Ending Occupancy Switch toggles on -> Dim Hallway Lights to 50%
+* When Hallway Delay Progress Notification Ending Occupancy Switch toggles on -> Dim Hallway Lights to 50%
+* When Hallway Cancel Delay Notification Switch toggles on -> Set Hallway Lights to 100% again
 
 Now, when the Hallway Lights are manually turned on or off, they stay on until the switch is manually turned back off. When the Hallway Lights are turned on by the motion sensor, they automatically turn off `stayOccupiedDelay` after motion stops but before the occupancy delay elapses, when the occupancy sensor delay reaches `notificationThreshold` it will toggle the notification switch on and off to notify you that the occupancy delay is about to end, and the lights will dim to 50% to let you know that they are about to turn off.
 
@@ -156,16 +158,21 @@ These automations add the fancy elements of turning on the hallway lights when t
           "identifier": "desk-stay-on-trigger-switch"
         },
         {
-          "name": "Desk light switch",
+          "name": "Desk presence switch",
           "type": "PRESENCE_SWITCH",
-          "identifier": "desk-light-switch"
+          "identifier": "desk-presence-switch"
         },
         {
-          "name": "Desk occupancy notification switch",
-          "type": "NOTIFICATION_SWITCH",
-          "identifier": "desk-occupancy-notification-switch",
+          "name": "Desk occupancy delay notification switch",
+          "type": "DELAY_PROGRESS_NOTIFICATION_SWITCH",
+          "identifier": "desk-occupancy-delay-notification-switch",
           "notificationThreshold": 75,
           "minimumNotificationTime": 5
+        },
+        {
+          "name": "Desk cancel occupancy delay notification switch",
+          "type": "CANCEL_DELAY_NOTIFICATION_SWITCH",
+          "identifier": "desk-cancel-occupancy-delay-notification-switch"
         },
         {
           "name": "Desk master switch",
@@ -204,13 +211,13 @@ These automations add the fancy elements of turning on the hallway lights when t
 | Always Boot as Occupied       | `alwaysBootAsOccupied`       | If enabled, the sensor will always boot as occupied regardless of previous status.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 #### Switches configuration
-| Name                      | Key                       | Description                                                                                                                                                                                                                                                                                                                                    |
-| ------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Switch Name               | `name`                    | Name for the switch                                                                                                                                                                                                                                                                                                                            |
-| Identifier                | `identifier`              | Unique identifier for the switch. Leave empty to auto-generate. If you set a value, it must be unique across all switches. If you do not set a value, identifier will change when name changes which might break automations.                                                                                                                  |
-| Switch Type               | `type`                    | Type of the switch. Possible values are: `OCCUPANCY_SWITCH`, `TRIGGER_OCCUPANCY_SWITCH`, `STAY_ON_SWITCH`, `TRIGGER_STAY_ON_SWITCH`, `PRESENCE_SWITCH`, `NOTIFICATION_SWITCH`, `MASTER_SWITCH`, `TRIGGER_SHUTOFF_SWITCH`. For more information on each switch type, please refer to the [Switch Types description](#switch-types-description). |
-| Notification Threshold    | `notificationThreshold`   | Threshold in percentage to trigger the notification switch. This is only used for `NOTIFICATION_SWITCH` type. If the occupancy delay reaches this threshold, the switch will toggle on and off.                                                                                                                                                |
-| Minimum Notification Time | `minimumNotificationTime` | Minimum number of seconds required to trigger a notification regardless of the notification threshold. If the delay after applying the threshold is less than this time, the notification will not be triggered. This is only used for `NOTIFICATION_SWITCH` type.                                                                                                               |
+| Name                      | Key                       | Description                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Switch Name               | `name`                    | Name for the switch                                                                                                                                                                                                                                                                                                                                           |
+| Identifier                | `identifier`              | Unique identifier for the switch. Leave empty to auto-generate. If you set a value, it must be unique across all switches. If you do not set a value, identifier will change when name changes which might break automations.                                                                                                                                 |
+| Switch Type               | `type`                    | Type of the switch. Possible values are: `OCCUPANCY_SWITCH`, `TRIGGER_OCCUPANCY_SWITCH`, `STAY_ON_SWITCH`, `TRIGGER_STAY_ON_SWITCH`, `PRESENCE_SWITCH`, `DELAY_PROGRESS_NOTIFICATION_SWITCH`, `MASTER_SWITCH`, `TRIGGER_SHUTOFF_SWITCH`. For more information on each switch type, please refer to the [Switch Types description](#switch-types-description). |
+| Notification Threshold    | `notificationThreshold`   | Threshold in percentage to trigger the notification switch. This is only used for `DELAY_PROGRESS_NOTIFICATION_SWITCH` type. If the occupancy delay reaches this threshold, the switch will toggle on and off.                                                                                                                                                |
+| Minimum Notification Time | `minimumNotificationTime` | Minimum number of seconds required to trigger a notification regardless of the notification threshold. If the delay after applying the threshold is less than this time, the notification will not be triggered. This is only used for `DELAY_PROGRESS_NOTIFICATION_SWITCH` type.                                                                             |
 
 
 ### Thanks and caveats

@@ -59,16 +59,21 @@
               "identifier": "desk-stay-on-trigger-switch"
             },
             {
-              "name": "Desk light switch",
+              "name": "Desk presence switch",
               "type": "PRESENCE_SWITCH",
-              "identifier": "desk-light-switch"
+              "identifier": "desk-presence-switch"
             },
             {
-              "name": "Desk occupancy notification switch",
-              "type": "NOTIFICATION_SWITCH",
-              "identifier": "desk-occupancy-notification-switch",
+              "name": "Desk occupancy delay notification switch",
+              "type": "DELAY_PROGRESS_NOTIFICATION_SWITCH",
+              "identifier": "desk-occupancy-delay-notification-switch",
               "notificationThreshold": 75,
               "minimumNotificationTime": 5
+            },
+            {
+              "name": "Desk cancel occupancy delay notification switch",
+              "type": "CANCEL_DELAY_NOTIFICATION_SWITCH",
+              "identifier": "desk-cancel-occupancy-delay-notification-switch"
             },
             {
               "name": "Desk master switch",
