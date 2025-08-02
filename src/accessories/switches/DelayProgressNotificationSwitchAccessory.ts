@@ -6,7 +6,7 @@ import { SwitchAccessory } from './SwitchAccessory.js';
 import { map, take, takeUntil, timer } from 'rxjs';
 import { StorageLayer } from '../../utils/StorageLayer.js';
 
-export class NotificationSwitchAccessory extends SwitchAccessory<NotificationSwitchConfig> {
+export class DelayProgressNotificationSwitchAccessory extends SwitchAccessory<NotificationSwitchConfig> {
 
   constructor(
     platform: SmartOccupancyHomebridgePlatform,

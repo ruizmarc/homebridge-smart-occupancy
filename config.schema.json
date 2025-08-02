@@ -247,7 +247,7 @@
                       {
                         "title": "Occupancy Progress Notification Switch",
                         "enum": [
-                          "NOTIFICATION_SWITCH"
+                          "DELAY_PROGRESS_NOTIFICATION_SWITCH"
                         ]
                       },
                       {
@@ -279,7 +279,7 @@
                     "maximum": 100,
                     "description": "Percentage of delay consumed before triggering switch.",
                     "condition": {
-                      "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
+                      "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'DELAY_PROGRESS_NOTIFICATION_SWITCH';"
                     }
                   },
                   "minimumNotificationTime": {
@@ -289,7 +289,7 @@
                     "minimum": 0,
                     "description": "Minimum number of seconds required to trigger a notification regardless of the notification threshold. If the delay after applying the threshold is less than this time, the notification will not be triggered.",
                     "condition": {
-                      "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'NOTIFICATION_SWITCH';"
+                      "functionBody": "return model.sensors[arrayIndices[0]].switches[arrayIndices[1]].type === 'DELAY_PROGRESS_NOTIFICATION_SWITCH';"
                     }
                   }
                 }
