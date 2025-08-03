@@ -245,9 +245,15 @@
                         ]
                       },
                       {
-                        "title": "Occupancy Progress Notification Switch",
+                        "title": "Occupancy Progress Delay Notification Switch",
                         "enum": [
                           "DELAY_PROGRESS_NOTIFICATION_SWITCH"
+                        ]
+                      },
+                      {
+                        "title": "Cancel Occupancy Delay Notification Switch",
+                        "enum": [
+                          "CANCEL_DELAY_NOTIFICATION_SWITCH"
                         ]
                       },
                       {
