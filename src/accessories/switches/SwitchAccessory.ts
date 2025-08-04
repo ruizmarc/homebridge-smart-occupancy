@@ -90,7 +90,7 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
   }
 
   handleOnSet(value: CharacteristicValue) {
-    this.log.debug(`${this.switchType}: ${this.switchConfig.name} Triggered SET On -> `, value);
+    this.log.debug(`${this.switchType}: ${this.switchConfig.name} Triggered SET On from ${this.getStatusCharacteristic()} to ${value}`);
     this.setStatus(Boolean(value), { updateCharacteristic: false, triggerSwitchActions: true });
   }
 
@@ -99,7 +99,11 @@ export abstract class SwitchAccessory<CONFIG extends SwitchConfig = SwitchConfig
   }
 
   public setStatus(status: boolean, options: SetSwitchStatusOptions = { updateCharacteristic: true, triggerSwitchActions: true }) {
-    this.log.debug(`${this.switchType}: ${this.switchConfig.name} Setting switch status to -> `, status);
+    this.log.debug(`${this.switchType}: ${this.switchConfig.name} Setting switch status from ${this.getStatusCharacteristic()} to ${status}`);
+    if (this.switchState.isOn === status) {
+      this.log.debug(`${this.switchType}: ${this.switchConfig.name} Switch status is already ${status}, no action taken.`);
+      return;
+    }
     this.switchState.isOn = status;
     if (this.sensorConfig.persistStatusAcrossReboots && this.storage) {
       this.storage.setItem(this.switchIdentifier, this.switchState).catch((error) => {
