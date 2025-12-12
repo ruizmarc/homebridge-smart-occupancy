@@ -2,7 +2,7 @@
   "name": "homebridge-smart-occupancy",
   "displayName": "Smart Occupancy Homebridge",
   "type": "module",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "private": false,
   "description": "Create flexible and customizable occupancy sensors for Homebridge with extra switches and triggers to control sensor and occupancy delay behavior.",
   "author": "ruizmarc",
@@ -35,7 +35,7 @@
   ],
   "main": "dist/index.js",
   "engines": {
-    "node": "^18.20.4 || ^20.18.0 || ^22.10.0",
+    "node": "^18.20.4 || ^20.18.0 || ^22.10.0 || ^24.0.0",
     "homebridge": "^1.8.0 || ^2.0.0-beta.0"
   },
   "scripts": {
@@ -45,20 +45,20 @@
     "watch": "npm run build && npm link && nodemon"
   },
   "dependencies": {
-    "homebridge-lib": "^7.1.4",
+    "homebridge-lib": "^7.2.0",
     "node-persist": "^4.0.4",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
-    "@types/node": "^22.13.5",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.1.0",
     "@types/node-persist": "^3.1.8",
-    "eslint": "^9.21.0",
+    "eslint": "^9.39.1",
     "homebridge": "^2.0.0-beta.0",
-    "nodemon": "^3.1.9",
-    "rimraf": "^6.0.1",
+    "nodemon": "^3.1.11",
+    "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.24.1"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.49.0"
   }
 }
